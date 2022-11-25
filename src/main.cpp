@@ -1,5 +1,8 @@
 #include <Arduino.h>
+
+extern "C"{
 #include <SCIMaster.h>
+}
 
 void setup() {
   SCIMasterInit((tsSCI_MASTER_CALLBACKS){NULL});
