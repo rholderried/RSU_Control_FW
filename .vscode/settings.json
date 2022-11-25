@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "scimasterconfig.h": "c",
+        "scimaster.h": "c"
+    }
+}

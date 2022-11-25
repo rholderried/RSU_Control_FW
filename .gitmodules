@@ -1,0 +1,3 @@
+[submodule "lib/SCI_Master"]
+	path = lib/SCI_Master
+	url = https://github.com/rholderried/SCI_Master.git

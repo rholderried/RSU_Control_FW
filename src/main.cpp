@@ -1,7 +1,8 @@
 #include <Arduino.h>
+#include <SCIMaster.h>
 
 void setup() {
-  // put your setup code here, to run once:
+  SCIMasterInit((tsSCI_MASTER_CALLBACKS){NULL});
 }
 
 void loop() {
