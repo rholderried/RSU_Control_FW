@@ -1,6 +1,9 @@
 {
     "files.associations": {
         "scimasterconfig.h": "c",
-        "scimaster.h": "c"
+        "scimaster.h": "c",
+        "scitransfer.h": "c",
+        "scicommon.h": "c",
+        "buffer.h": "c"
     }
 }

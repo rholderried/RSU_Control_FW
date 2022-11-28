@@ -1,25 +1,49 @@
 /**************************************************************************//**
- * \file Callbacks.h
+ * \file Configuration.h
  * \author Roman Holderried
  *
- * \brief Callback declarations for the RSU firmware.
+ * \brief Configuration for the RSU control unit.
  *
  * <b> History </b>
- * 	- 2022-11-17 - File copied from SCI
+ * 	- 2022-11-28 - File creation
  *****************************************************************************/
 
-#ifndef _CALLBACKS_H_
-#define _CALLBACKS_H_
+#ifndef _CONFIGURATION_H_
+#define _CONFIGURATION_H_
 /******************************************************************************
  * Includes
  *****************************************************************************/
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <SCIMaster.h>
+#include "Common.h"
+
 /******************************************************************************
- * defines
+ * Revolver parameter
  *****************************************************************************/
+/** Number of Sample cylinder slots */
+#define NUMBER_OF_SLOTS 6
+
+// Reference position search parameters
+/** Angular velocity of the revolver on reference position search [rad/s] */
+#define REFERENCE_POSITION_SEARCH_ANGULAR_VELOCITY      3.14f
+
+/** Angular acceleration of the revolver on reference position search [rad/s²] */
+#define REFERENCE_POSITION_SEARCH_ANGULAR_ACCELERATION  3.14f
+
+// Movement velocity
+/** Angular velocity of the revolver movement in nominal operation [rad/s] */
+#define MOVEMENT_ANGULAR_VELOCITY   6.28f
+
+/** Angular acceleration of the revolver movement in nominal operation [rad/s] */
+#define MOVEMENT_ANGULAR_ACCELERATION 3.14f
+
+
+
+
+
+
+
 
 /******************************************************************************
  * Type definitions
@@ -29,10 +53,4 @@
  * Function declarations
  *****************************************************************************/
 
-teTRANSFER_ACK ProcessSetVarTransfer (teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num, uint16_t ui16ErrNum);
-teTRANSFER_ACK ProcessGetVarTransfer (teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num, uint32_t ui32Data, uint16_t ui16ErrNum);
-teTRANSFER_ACK ProcessCommandTransfer(teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num, uint32_t *pui32Data, uint8_t ui8DataCnt, uint16_t ui16ErrNum);
-teTRANSFER_ACK ProcessUpstreamTransfer(int16_t i16Num, uint8_t *pui8Data, uint32_t ui32DataCnt);
-
-
-#endif //_CALLBACKS_H_
+#endif //_CONFIGURATION_H_

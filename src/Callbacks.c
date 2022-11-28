@@ -2,16 +2,25 @@
  * \file Callbacks.c
  * \author Roman Holderried
  *
- * \brief Master functions for SCI communications.
+ * \brief Callbacks of the RSU application.
  * 
- * This serial protocol has been initially written for the MMX heater controller
- * module. It provides data read/write access and a command interface to the 
- * application.
- *
  * <b> History </b>
- * 	- 2022-11-17 - File creation -
+ * 	- 2022-11-28 - File creation -
  *****************************************************************************/
 
 /******************************************************************************
  * Includes
  *****************************************************************************/
+#include <Arduino.h>
+#include "Callbacks.h"
+
+/******************************************************************************
+ * Function definitions
+ *****************************************************************************/
+teTRANSFER_ACK ProcessGetVarTransfer (teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num, uint32_t ui32Data, uint16_t ui16ErrNum)
+{
+    if (eAck == eREQUEST_ACK_STATUS_SUCCESS)
+    {
+
+    }
+}
