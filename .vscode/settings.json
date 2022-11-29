@@ -4,6 +4,7 @@
         "scimaster.h": "c",
         "scitransfer.h": "c",
         "scicommon.h": "c",
-        "buffer.h": "c"
+        "buffer.h": "c",
+        "esp32-hal-uart.h": "c"
     }
 }

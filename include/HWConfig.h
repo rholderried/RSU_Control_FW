@@ -1,52 +1,49 @@
 /**************************************************************************//**
- * \file RSU.h
+ * \file HWConfig.h
  * \author Roman Holderried
  *
- * \brief RSU control function declarations, type definitions,....
+ * \brief Hardware configuration.
  *
  * <b> History </b>
  * 	- 2022-11-28 - File creation
  *****************************************************************************/
 
-#ifndef _RSU_H_
-#define _RSU_H_
+#ifndef _HWCONFIG_H_
+#define _HWCONFIG_H_
 /******************************************************************************
  * Includes
  *****************************************************************************/
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "Revolver.h"
-
 /******************************************************************************
- * defines
+ * Defines
  *****************************************************************************/
+// SCI configuration
+/** SCI UART baud rate [bit/s]*/
+#define SCI_BAUD    115200
+
+/** SCI receive pin number */
+#define SCI_PIN_RX  14
+
+/** SCI transmit pin number */
+#define SCI_PIN_TX  27
+
+/** SCI UART peripheral number */
+#define SCI_UART_NUM  1
+
+
+
+
+
+
 
 /******************************************************************************
  * Type definitions
  *****************************************************************************/
-typedef enum
-{
-    eRSU_STATE_INIT                 = 0,
-    eRSU_STATE_POSITION_REFERENCE,
-    eRSU_STATE_OPERATIONAL_IDLE,
-    eRSU_STATE_OPERATIONAL_MOVING,
-    eRSU_STATE_FAULT
-}teRSU_STATE;
-
-/** \brief RSU main variable struct*/
-typedef struct
-{
-    teRSU_STATE eRsuState;  /*!< Current State */
-    tsREVOLVER sRevolver;   /*!< Revolver variables */
-}tsRSU;
-
-#define tsRSU_DEFAULTS {eRSU_STATE_INIT, tsREVOLVER_DEFAULTS}
 
 /******************************************************************************
  * Function declarations
  *****************************************************************************/
 
-void RSUStateMachine (void);
-
-#endif //_RSU_H_
+#endif //_HWCONFIG_H_

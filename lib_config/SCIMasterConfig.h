@@ -22,7 +22,7 @@
 #define TX_PACKET_LENGTH    128
 
 // Mode configuration
-#define SEND_MODE_BYTE_BY_BYTE
+//#define SEND_MODE_BYTE_BY_BYTE
 #define VALUE_MODE_HEX
 
 #endif // _SCIMASTERCONFIG_H_
