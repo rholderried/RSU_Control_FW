@@ -15,12 +15,14 @@
  *****************************************************************************/
 #include <stdint.h>
 #include <stdbool.h>
+#include <Timer32Bit.h>
 
 #include "Revolver.h"
 
 /******************************************************************************
  * defines
  *****************************************************************************/
+#define INIT_TO_POSITION_REFERENCE_TIMEOUT_MS 2000
 
 /******************************************************************************
  * Type definitions
@@ -37,16 +39,28 @@ typedef enum
 /** \brief RSU main variable struct*/
 typedef struct
 {
-    teRSU_STATE eRsuState;  /*!< Current State */
+    bool bInitialized;
+
+    struct
+    {
+        teRSU_STATE eRsuState;                  /*!< Current State */
+        teRSU_STATE eNextState;                 /*!< Next State */
+        int8_t      i8StateTransitionTimerIdx;
+    }sStateControl;
+
     tsREVOLVER sRevolver;   /*!< Revolver variables */
 }tsRSU;
 
-#define tsRSU_DEFAULTS {eRSU_STATE_INIT, tsREVOLVER_DEFAULTS}
+#define tsRSU_DEFAULTS {{eRSU_STATE_INIT, eRSU_STATE_INIT,  -1}, tsREVOLVER_DEFAULTS}
 
 /******************************************************************************
  * Function declarations
  *****************************************************************************/
 
+void RSUInit(void);
 void RSUStateMachine (void);
+void SetStateTransitionTimeout(uint32_t ui32Timeout_ms);
+void _RSUTransitionToState (void);
+void _RSUChangeState (teRSU_STATE eState, uint32_t ui32Timeout_ms);
 
 #endif //_RSU_H_
