@@ -43,6 +43,10 @@
 */
 #define HW_TIMER_CFG_DIV    2
 
+// Reference Sensor Hardware configuration
+/** Reference Sensor GPIO number */
+#define REF_SENSOR_PIN      12
+
 
 
 

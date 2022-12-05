@@ -15,7 +15,7 @@
  *****************************************************************************/
 #include <stdint.h>
 #include <stdbool.h>
-#include <cstddef>
+#include <stddef.h>
 
 /******************************************************************************
  * SCI Variables
@@ -24,16 +24,23 @@
 #define NUMBER_OF_MOTORCONTROLLER_VARS 2
 
 // Motorcontroller external variables
-#define SCI_VAR_NUM_MOTION_CONTROLLER_SCALE     59
-#define SCI_VAR_NUM_ACTUAL_POSITION_INCREMENTS  12
+#define MOTCTRL_VAR_NUM_MOTION_CONTROLLER_SCALE     59
+#define MOTCTRL_VAR_NUM_ACTUAL_POSITION_INCREMENTS  12
 
 // Motorcontroller external functions
-#define CMD_NUM_MOTIONCONTROLLER_START          15
-#define CMD_NUM_MOTIONCONTROLLER_FINISH_MVMNT   16
+#define MOTCTRL_CMD_NUM_MOTIONCONTROLLER_START          15
+#define MOTCTRL_CMD_NUM_MOTIONCONTROLLER_FINISH_MVMNT   16
 
 /******************************************************************************
  * Type definitions
  *****************************************************************************/
+typedef enum
+{
+    eTRANSFER_STATE_IDLE,
+    eTRANSFER_STATE_ISSUED,
+    eTRANSFER_STATE_BUSY,
+    eTRANSFER_STATE_READY
+}teTRANSFER_STATE;
 
 /** \brief Data type enumerator.*/
 typedef enum
@@ -64,9 +71,30 @@ typedef struct
 
 #define tsMOTCONTROLVARS_DEFAULTS {0};
 
+typedef struct
+{
+    struct
+    {
+        teTRANSFER_STATE eTransferState;
+        void (*TransferRdyCb)(void);
+    }sTransfer;
+}tsMOTORCONTROLLER;
+
+#define tsMOTORCONTROLLER_DEFAULTS {{eTRANSFER_STATE_IDLE, NULL}}
+
 /******************************************************************************
  * Function declarations
  *****************************************************************************/
+bool MotCtrlGetVar (int16_t i16Num, void (*TransferRdyCb)(void));
+bool MotCtrlStartMovement(float fTargetAcceleration, float fTargetVelocity, float fTargetPosition, bool bReferenceMovement, void (*TransferRdyCb)(void));
+bool MotCtrlStopMovement(void (*TransferRdyCb)(void));
+
+
+teTRANSFER_ACK ProcessSetVarTransfer (teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num, uint16_t ui16ErrNum);
+teTRANSFER_ACK ProcessGetVarTransfer (teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num, uint32_t ui32Data, uint16_t ui16ErrNum);
+teTRANSFER_ACK ProcessCommandTransfer(teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num, uint32_t *pui32Data, uint8_t ui8DataCnt, uint16_t ui16ErrNum);
+teTRANSFER_ACK ProcessUpstreamTransfer(int16_t i16Num, uint8_t *pui8Data, uint32_t ui32DataCnt);
+
 // void GetVarCallback (tsSCI_VAR *SciVarTable);
 
 #endif //_MOTORCONTROLLER_H_

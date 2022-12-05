@@ -14,8 +14,11 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 // #include <
+#include "RSU.h"
 #include "Callbacks.h"
 #include "HWConfig.h"
+#include "ReferenceSensor.h"
+#include "MotorController.h"
 #include <SCIMaster.h>
 #include <Timer32Bit.h>
 
@@ -45,13 +48,18 @@ void setup()
   /****************************************************************************
    * Initialize timer (Timer base frequency == 80 MHz, minimum divider == 2 -> Timer frequency == 40 MHz)
    ***************************************************************************/
-   HwTimer = timerBegin(HW_TIMER_CFG_NUM, HW_TIMER_CFG_DIV, true);
+  HwTimer = timerBegin(HW_TIMER_CFG_NUM, HW_TIMER_CFG_DIV, true);
   timerAttachInterrupt(HwTimer, Timer32BitExecute, false);
   // Set the timer period value for a timeout every 1 ms
   timerAlarmWrite(HwTimer, 80000000/(HW_TIMER_CFG_DIV * 1000), true);
   timerStart(HwTimer);
   /***************************************************************************/
-  
+
+  /****************************************************************************
+   * Initialize the reference sensor
+   ***************************************************************************/
+  // InitRefSensor()
+  /***************************************************************************/
 
   SCISerial.begin(SCI_BAUD, SERIAL_8N1, SCI_PIN_RX, SCI_PIN_TX);
 
@@ -66,5 +74,9 @@ void setup()
 }
 
 void loop() {
+  
+  RSUStateMachine();
+
+  SCIMasterSM();
   // put your main code here, to run repeatedly:
 }
