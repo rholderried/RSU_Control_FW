@@ -17,16 +17,25 @@
 #include <stdbool.h>
 
 #include "Common.h"
+#include "Configuration.h"
 
 /******************************************************************************
  * defines
  *****************************************************************************/
-/** Default offset of slot 1 relative to the reference position */
-#define SLOT1_DEFAULT_OFFSET 0.0f
+
+#define MOTIONCONTROLLER_ACTIVE_POLLING_RATE_MS 200
 
 /******************************************************************************
  * Type definitions
  *****************************************************************************/
+typedef enum
+{
+    eREVOLVER_MOTION_STATE_IDLE = 0,
+    eREVOLVER_MOTION_STATE_CHECK_MOTIONCONTROLLER,
+    eREVOLVER_MOTION_STATE_START_MOTIONCONTROLLER,
+    eREVOLVER_MOTION_STATE_FINISH_MOVEMENT
+}teREVOLVER_MOTION_STATES;
+
 /** \brief Sample cylinder slot data */
 typedef struct
 {
@@ -49,14 +58,34 @@ typedef struct
         }sPar;
     }sPosition;
 
+    struct
+    {
+        bool bAbort;
+        bool bLock;
+        bool bMotionFinished;
+        int8_t i8TimerIdx;
+        teREVOLVER_MOTION_STATES eMotionStates;
+        tsMOTION_INFO sMotionInfo;
+    }sMotion;
+
     tsSLOT sSlots[MAX_NUMBER_OF_SLOTS];         /*!< Slot info array (Index identifies slot number => index 0 -> slot 1) */
 }tsREVOLVER;
 
-#define tsREVOLVER_DEFAULTS {   {false, 0.0, {0.0}, {SLOT1_DEFAULT_OFFSET}}, \
+#define tsREVOLVER_DEFAULTS {   {false, 0.0, {0.0}, {SLOT1_DEFAULT_OFFSET_FROM_REFERENCE}}, \
+                                {false, false, false, -1, eREVOLVER_MOTION_STATE_IDLE, tsMOTION_INFO_DEFAULTS}, \
                                 {tsSLOT_DEFAULTS} \
 }
 /******************************************************************************
  * Function declarations
  *****************************************************************************/
+bool InitRevolver (tsREVOLVER *psRevolver);
+
+bool RevolverStartMovementToSlot(tsREVOLVER *psRevolver, tsMOTION_INFO sMotionInfo);
+
+void RevolverMotionStateMachine(tsREVOLVER *psRevolver);
+
+void RevolverInitSlots (tsREVOLVER *psRevolver, float fRefPos);
+
+void _RevolverSetMotionState(tsREVOLVER *psRevolver, teREVOLVER_MOTION_STATES eNewState);
 
 #endif //_REVOLVER_H_

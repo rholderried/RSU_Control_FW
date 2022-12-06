@@ -71,9 +71,13 @@ void setup()
                                          .BlockingTxExternalCB = NULL,
                                          .NonBlockingTxExternalCB = SCISerialWriteNonBlocking,
                                          .GetTxBusyStateExternalCB = SCISerialGetBusyState});
+  
+  // Initialize the RSU
+  RSUInit();
 }
 
-void loop() {
+void loop() 
+{
   
   RSUStateMachine();
 

@@ -23,7 +23,8 @@
 /******************************************************************************
  * defines
  *****************************************************************************/
-#define INIT_TO_POSITION_REFERENCE_TIMEOUT_MS 2000
+#define INIT_TO_PREOP_TIMEOUT_MS 2000
+#define PREOP_TO_POSITION_REFERENCE_TIMEOUT_MS 100
 #define POSITION_REFERENCE_TO_OPERATIONAL_IDLE_TIMEOUT_MS 2000
 
 /******************************************************************************
@@ -32,6 +33,7 @@
 typedef enum
 {
     eRSU_STATE_INIT                 = 0,
+    eRSU_STATE_PREOP,
     eRSU_STATE_POSITION_REFERENCE,
     eRSU_STATE_OPERATIONAL_IDLE,
     eRSU_STATE_OPERATIONAL_MOVING,
@@ -52,6 +54,7 @@ typedef enum
 typedef struct
 {
     bool bInitialized;
+    tsCOMMAND_INFO sNextCmd;
 
     struct
     {
@@ -71,6 +74,7 @@ typedef struct
 }tsRSU;
 
 #define tsRSU_DEFAULTS {false,\
+                        tsCOMMAND_INFO_DEFAULTS,\
                         {eRSU_STATE_INIT, eRSU_STATE_INIT,  -1},\
                         {eREF_STATE_INIT},\
                         tsREVOLVER_DEFAULTS,\
@@ -84,9 +88,11 @@ typedef struct
 void RSUInit(void);
 void RSUStateMachine (void);
 void SetStateTransitionTimeout(uint32_t ui32Timeout_ms);
-void _RSUTransitionToState (void);
+void ReferenceSensorEdgeISR(void);
+bool RegisterCommand (tsCOMMAND_INFO);
+void _RSUTransitionToState (void * pUserData);
 void _RSUChangeState (teRSU_STATE eState, uint32_t ui32Timeout_ms);
 void _RSUPosRefChangeState(teREFERENCE_STATE eNewState);
-void ReferenceSensorEdgeCb(bool bEdge);
+// void RSUStartMovement();
 
 #endif //_RSU_H_

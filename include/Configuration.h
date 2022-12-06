@@ -41,6 +41,9 @@
 /** Index of the motion controller implemented on the motor controller */
 // #define MOTION_CONTROLLER_INSTANCE 0
 
+/** Default offset of slot 1 relative to the reference position */
+#define     SLOT1_DEFAULT_OFFSET_FROM_REFERENCE 0.0f
+
 
 
 

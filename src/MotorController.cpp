@@ -41,6 +41,11 @@ tsSCI_VAR sSciVarTable[NUMBER_OF_MOTORCONTROLLER_VARS] =
         .i16Num = MOTCTRL_VAR_NUM_ACTUAL_POSITION_INCREMENTS,
         .pVar   = &sMotCtrlVars.i32ActualPositionIncrements,
         .eDtype = eDTYPE_INT32
+    },
+    {  
+        .i16Num = MOTCTRL_VAR_NUM_MOTIONCONTROLLER_ACTIVE_FLAG,
+        .pVar   = &sMotCtrlVars.bMotionControllerActive,
+        .eDtype = eDTYPE_UINT8
     }
 };
 
@@ -48,12 +53,13 @@ tsSCI_VAR sSciVarTable[NUMBER_OF_MOTORCONTROLLER_VARS] =
 /******************************************************************************
  * Function definitions
  *****************************************************************************/
-bool MotCtrlGetVar (int16_t i16Num, void (*TransferRdyCb)(void))
+bool MotCtrlGetVar (int16_t i16Num, void (*TransferRdyCb)(void* pDat), void* pDat)
 {
     if (SCIGetProtocolState() == ePROTOCOL_IDLE)
     {
         SCIRequestGetVar(i16Num);
         sMotCtrl.sTransfer.TransferRdyCb = TransferRdyCb;
+        sMotCtrl.sTransfer.pDat = pDat;
 
         // Flag that transfer has been started
         return true;
@@ -63,7 +69,7 @@ bool MotCtrlGetVar (int16_t i16Num, void (*TransferRdyCb)(void))
 }
 
 //=============================================================================
-bool MotCtrlStartMovement(float fTargetAcceleration, float fTargetVelocity, float fTargetPosition, bool bReferenceMovement, void (*TransferRdyCb)(void))
+bool MotCtrlStartMovement(float fTargetAcceleration, float fTargetVelocity, float fTargetPosition, bool bReferenceMovement, void (*TransferRdyCb)(void* pDat), void* pDat)
 {
     if (SCIGetProtocolState() == ePROTOCOL_IDLE)
     {
@@ -77,6 +83,7 @@ bool MotCtrlStartMovement(float fTargetAcceleration, float fTargetVelocity, floa
         SCIRequestCommand(MOTCTRL_CMD_NUM_MOTIONCONTROLLER_START, uVals, 5);
 
         sMotCtrl.sTransfer.TransferRdyCb = TransferRdyCb;
+        sMotCtrl.sTransfer.pDat = pDat;
 
         // Flag that transfer has been started
         return true;
@@ -86,7 +93,7 @@ bool MotCtrlStartMovement(float fTargetAcceleration, float fTargetVelocity, floa
 }
 
 //=============================================================================
-bool MotCtrlStopMovement(void (*TransferRdyCb)(void))
+bool MotCtrlStopMovement(void (*TransferRdyCb)(void* pDat), void* pDat)
 {
     if (SCIGetProtocolState() == ePROTOCOL_IDLE)
     {
@@ -96,6 +103,27 @@ bool MotCtrlStopMovement(void (*TransferRdyCb)(void))
         SCIRequestCommand(MOTCTRL_CMD_NUM_MOTIONCONTROLLER_FINISH_MVMNT, uVals, 1);
 
         sMotCtrl.sTransfer.TransferRdyCb = TransferRdyCb;
+        sMotCtrl.sTransfer.pDat = pDat;
+
+        // Flag that transfer has been started
+        return true;
+    }
+    else
+        return false;
+}
+
+//=============================================================================
+bool MotCtrlSwitchOnMotorOutput(void (*TransferRdyCb)(void* pDat), void* pDat)
+{
+    if (SCIGetProtocolState() == ePROTOCOL_IDLE)
+    {
+        // Fill in the payload
+        tuREQUESTVALUE uVals[1] =   {{.ui32_hex = 0}};
+
+        SCIRequestCommand(MOTCTRL_CMD_NUM_SWITCH_ON_MOTOR_OUTPUT, uVals, 1);
+
+        sMotCtrl.sTransfer.TransferRdyCb = TransferRdyCb;
+        sMotCtrl.sTransfer.pDat = pDat;
 
         // Flag that transfer has been started
         return true;
@@ -160,7 +188,7 @@ teTRANSFER_ACK ProcessGetVarTransfer (teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num
 
         // Call the Transfer callback
         if (sMotCtrl.sTransfer.TransferRdyCb)
-            sMotCtrl.sTransfer.TransferRdyCb();
+            sMotCtrl.sTransfer.TransferRdyCb(sMotCtrl.sTransfer.pDat);
 
         return eTRANSFER_ACK_SUCCESS;
     }
@@ -185,7 +213,7 @@ teTRANSFER_ACK ProcessCommandTransfer(teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num
         }
 
         if (sMotCtrl.sTransfer.TransferRdyCb)
-            sMotCtrl.sTransfer.TransferRdyCb();
+            sMotCtrl.sTransfer.TransferRdyCb(sMotCtrl.sTransfer.pDat);
             
         eTAck = eTRANSFER_ACK_SUCCESS;
     }

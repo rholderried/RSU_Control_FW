@@ -1,21 +1,19 @@
 /**************************************************************************//**
- * \file ReferenceSensor.cpp
+ * \file Interface.cpp
  * \author Roman Holderried
  *
- * \brief Functions related to the reference sensor.
+ * \brief Serial and wireless interface to the RSU.
  * 
  * <b> History </b>
- * 	- 2022-12-05 - File creation
+ * 	- 2022-12-06 - File creation
  *****************************************************************************/
 
 /******************************************************************************
  * Includes
  *****************************************************************************/
 #include <cstdint>
-#include <cstdbool>
-#include "HWConfig.h"
-#include "Arduino.h"
-#include "ReferenceSensor.h"
+#include <SCIMaster.h>
+#include "Interface.h"
 
 /******************************************************************************
  * Defines
@@ -24,25 +22,17 @@
 /******************************************************************************
  * Private Globals
  *****************************************************************************/
-static tsREFERENCE_SENSOR sRefSens = tsREFERENCE_SENSOR_DEFAULTS;
+
+/******************************************************************************
+ * Exported Globals
+ *****************************************************************************/
 
 /******************************************************************************
  * Function definitions
  *****************************************************************************/
-void InitRefSensor (tsREFERENCE_SENSOR *psRefSens)//, tsREFERENCE_SENSOR_CALLBACKS sCallbacks)
+tsCOMMAND_INFO GetNextCommand(void)
 {
-    // Assign the GPIO
-    // psRefSens->sCallbacks = sCallbacks;
+    tsCOMMAND_INFO sCmdInfo = tsCOMMAND_INFO_DEFAULTS;
 
-    pinMode(REF_SENSOR_PIN, INPUT_PULLUP);
-
-    psRefSens->bLaststate = (bool)digitalRead(REF_SENSOR_PIN);
-}
-
-//=============================================================================
-bool GetRefSensorState (tsREFERENCE_SENSOR *psRefSens)
-{
-    psRefSens->bLaststate = (bool)digitalRead(REF_SENSOR_PIN);
-
-    return psRefSens->bLaststate;
+    return sCmdInfo;
 }

@@ -17,17 +17,21 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include <SCIMaster.h>
+
 /******************************************************************************
  * SCI Variables
  *****************************************************************************/
 
-#define NUMBER_OF_MOTORCONTROLLER_VARS 2
+#define NUMBER_OF_MOTORCONTROLLER_VARS 3
 
 // Motorcontroller external variables
-#define MOTCTRL_VAR_NUM_MOTION_CONTROLLER_SCALE     59
-#define MOTCTRL_VAR_NUM_ACTUAL_POSITION_INCREMENTS  12
+#define MOTCTRL_VAR_NUM_MOTION_CONTROLLER_SCALE         59
+#define MOTCTRL_VAR_NUM_ACTUAL_POSITION_INCREMENTS      12
+#define MOTCTRL_VAR_NUM_MOTIONCONTROLLER_ACTIVE_FLAG    16
 
 // Motorcontroller external functions
+#define MOTCTRL_CMD_NUM_SWITCH_ON_MOTOR_OUTPUT          3
 #define MOTCTRL_CMD_NUM_MOTIONCONTROLLER_START          15
 #define MOTCTRL_CMD_NUM_MOTIONCONTROLLER_FINISH_MVMNT   16
 
@@ -66,6 +70,7 @@ typedef struct
 typedef struct
 {
     float   fMotionControllerScale;
+    bool    bMotionControllerActive;
     int32_t i32ActualPositionIncrements;
 }tsMOTCONTROLVARS;
 
@@ -76,18 +81,20 @@ typedef struct
     struct
     {
         teTRANSFER_STATE eTransferState;
-        void (*TransferRdyCb)(void);
+        void (*TransferRdyCb)(void*);
+        void * pDat;
     }sTransfer;
 }tsMOTORCONTROLLER;
 
-#define tsMOTORCONTROLLER_DEFAULTS {{eTRANSFER_STATE_IDLE, NULL}}
+#define tsMOTORCONTROLLER_DEFAULTS {{eTRANSFER_STATE_IDLE, NULL, NULL}}
 
 /******************************************************************************
  * Function declarations
  *****************************************************************************/
-bool MotCtrlGetVar (int16_t i16Num, void (*TransferRdyCb)(void));
-bool MotCtrlStartMovement(float fTargetAcceleration, float fTargetVelocity, float fTargetPosition, bool bReferenceMovement, void (*TransferRdyCb)(void));
-bool MotCtrlStopMovement(void (*TransferRdyCb)(void));
+bool MotCtrlGetVar (int16_t i16Num, void (*TransferRdyCb)(void* pDat), void* pDat);
+bool MotCtrlStartMovement(float fTargetAcceleration, float fTargetVelocity, float fTargetPosition, bool bReferenceMovement, void (*TransferRdyCb)(void* pDat), void* pDat);
+bool MotCtrlStopMovement(void (*TransferRdyCb)(void* pDat), void* pDat);
+bool MotCtrlSwitchOnMotorOutput(void (*TransferRdyCb)(void* pDat), void* pDat);
 
 
 teTRANSFER_ACK ProcessSetVarTransfer (teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num, uint16_t ui16ErrNum);

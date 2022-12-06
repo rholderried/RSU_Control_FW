@@ -38,10 +38,10 @@ typedef struct
 typedef struct
 {
     bool bLaststate;
-    tsREFERENCE_SENSOR_CALLBACKS sCallbacks;
+    // tsREFERENCE_SENSOR_CALLBACKS sCallbacks;
 }tsREFERENCE_SENSOR;
 
-#define tsREFERENCE_SENSOR_DEFAULTS {REFERENCE_SENSOR_STATE_OFF, tsREFERENCE_SENSOR_CALLBACKS_DEFAULTS}
+#define tsREFERENCE_SENSOR_DEFAULTS {REFERENCE_SENSOR_STATE_OFF}//, tsREFERENCE_SENSOR_CALLBACKS_DEFAULTS}
 
 
 /******************************************************************************
@@ -50,18 +50,14 @@ typedef struct
 /********************************************************************************//**
  * \brief Initializes the reference sensor.
  ***********************************************************************************/
-void InitRefSensor (tsREFERENCE_SENSOR_CALLBACKS sCallbacks);
+void InitRefSensor (tsREFERENCE_SENSOR *psRefSens);//, tsREFERENCE_SENSOR_CALLBACKS sCallbacks);
 
 /********************************************************************************//**
  * \brief Get the current reference sensor state.
  * 
  * @returns Current reference sensor state.
  ***********************************************************************************/
-bool GetRefSensorState (void);
+bool GetRefSensorState (tsREFERENCE_SENSOR *psRefSens);
 
-/********************************************************************************//**
- * \brief Reference sensor interrupt service routine.
- ***********************************************************************************/
-void RefSensorOnChangeISR (void);
 
 #endif //_REFERENCESENSOR_H_
