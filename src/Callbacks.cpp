@@ -19,6 +19,7 @@
 #include "SCIMasterConfig.h"
 #include "MotorController.h"
 #include "HWConfig.h"
+#include "Interface.h"
 
 
 /******************************************************************************
@@ -44,6 +45,18 @@ void SCI_SERIAL_EVENT_CALLBACK(void)
     uint8_t ui8Data[RX_PACKET_LENGTH];
     
     SCIReceive(ui8Data, SCISerial.readBytes(ui8Data, SCISerial.available()));
+}
+
+//=============================================================================
+void serialEvent (void)
+{
+    uint8_t ui8Data;
+
+    while (Serial.available())
+    {
+        Serial.readBytes(&ui8Data, 1);
+        InterfaceReceiveString(ui8Data);
+    }
 }
 
 //=============================================================================

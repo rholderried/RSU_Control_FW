@@ -6,6 +6,7 @@
         "scicommon.h": "c",
         "buffer.h": "c",
         "esp32-hal-uart.h": "c",
-        "cstdbool": "cpp"
+        "cstdbool": "cpp",
+        "random": "cpp"
     }
 }

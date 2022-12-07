@@ -47,6 +47,12 @@
 /** Reference Sensor GPIO number */
 #define REF_SENSOR_PIN      12
 
+// Serial interface config
+/** Serial interface baud rate */
+#define SERIAL_BAUD 115200
+
+
+
 
 
 

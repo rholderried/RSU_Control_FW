@@ -29,6 +29,16 @@
 /******************************************************************************
  * Type definitions
  *****************************************************************************/
+
+// typedef enum
+// {
+//     eINTERFACE_ERROR_NONE           = 0,
+//     eINTERFACE_ERROR_SLOT           = 0,
+//     eINTERFACE_ERROR_ACCELERATION   = 1,
+//     eINTERFACE_ERROR_VELOCITY       = 2,
+//     eINTERFACE_ERROR_POSITION       = 3
+// }teRSU_ERRORS;
+
 typedef enum
 {
     eCOMMAND_NONE = 0,

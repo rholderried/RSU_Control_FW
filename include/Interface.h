@@ -17,17 +17,83 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "Common.h"
+#include "Configuration.h"
 
 /******************************************************************************
  * Defines
  *****************************************************************************/
-
+#define MAXIMUM_RECEIVE_OBJECT_BYTE_LENGTH 20
 /******************************************************************************
  * Type definitions
  *****************************************************************************/
+typedef enum
+{
+    eINTERFACE_COMMAND_NONE             = -1,
+    eINTERFACE_COMMAND_GO_TO_SLOT       = 0,
+    eINTERFACE_COMMAND_GO_TO_NEXT_FREE  = 1
+}teINTERFACE_COMMAND;
 
+typedef enum
+{
+    eINTERFACE_PARAMETER_NONE           = -1,
+    eINTERFACE_PARAMETER_SLOT           = 0,
+    eINTERFACE_PARAMETER_ACCELERATION   = 1,
+    eINTERFACE_PARAMETER_VELOCITY       = 2,
+    eINTERFACE_PARAMETER_POSITION       = 3
+}teINTERFACE_PARAMETER;
+
+typedef enum
+{
+    eINTERFACE_RECEIVE_STATE_IDLE,
+    eINTERFACE_RECEIVE_STATE_COMMAND,
+    eINTERFACE_RECEIVE_STATE_WAIT,
+    eINTERFACE_RECEIVE_STATE_MINUS_RECEIVED,
+    eINTERFACE_RECEIVE_STATE_GET_PAR,
+    eINTERFACE_RECEIVE_STATE_WAIT_FOR_MESSAGE_END,
+    eINTERFACE_RECEIVE_STATE_READY
+}teINTERFACE_RECEIVE_STATE;
+
+typedef enum
+{
+    eINTERFACE_ERROR_NONE           = 0,
+    eINTERFACE_ERROR_INVALID_COMMAND= 1,
+    eINTERFACE_ERROR_RSU_BUSY       = 2
+}teINTERFACE_ERRORS;
+
+typedef struct
+{
+    struct
+    {
+        bool                        bValid;
+        bool                        bConclude;
+        teINTERFACE_RECEIVE_STATE   eInterfaceState;
+        teINTERFACE_COMMAND         eCmd;
+        teINTERFACE_PARAMETER       eParID[INTERFACE_MAX_NUMBER_OF_PARAMETERS];
+        float                       fParVal[INTERFACE_MAX_NUMBER_OF_PARAMETERS];
+        uint16_t                    ui16MsgByteLen;
+        uint8_t                     ui8ParNum;
+
+        struct
+        {
+            uint16_t                ui16ObjLen;
+            char                    cObj[MAXIMUM_RECEIVE_OBJECT_BYTE_LENGTH + 1];
+        }sRObject;
+    }sReceiveParameter;
+
+    struct
+    {
+        bool bTransmitMessage;
+        teINTERFACE_ERRORS eIfError;
+    }sTransmitParameter;
+
+    // tsCOMMAND_INFO sCommand;
+}tsINTERFACE;
+
+#define tsINTERFACE_DEFAULTS {{false, false, eINTERFACE_RECEIVE_STATE_IDLE, eINTERFACE_COMMAND_NONE, {eINTERFACE_PARAMETER_NONE}, {0.0f}, 0, 0, {0, 0}},\
+                              {false, eINTERFACE_ERROR_NONE}}
 /******************************************************************************
  * Function declarations
  *****************************************************************************/
-
+void InitInterfaces (void);
+void InterfaceReceiveString (uint8_t ui8Data);
 #endif //_INTERFACE_H_
