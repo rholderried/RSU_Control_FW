@@ -51,7 +51,18 @@
 /** Serial interface baud rate */
 #define SERIAL_BAUD 115200
 
+/** Serial interface index */
+#define SERIAL_INTERFACE_INDEX 0
 
+// Slot config
+#define SLOT_1_ID_PIN 36
+#define SLOT_2_ID_PIN 39
+#define SLOT_3_ID_PIN 34
+#define SLOT_4_ID_PIN 35
+#define SLOT_5_ID_PIN 32
+#define SLOT_6_ID_PIN 33
+#define SLOT_7_ID_PIN 25
+#define SLOT_8_ID_PIN 26
 
 
 

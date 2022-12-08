@@ -60,7 +60,7 @@ typedef struct
     {
         teRSU_STATE eRsuState;                  /*!< Current State */
         teRSU_STATE eNextState;                 /*!< Next State */
-        int8_t      i8StateTransitionTimerIdx;
+        int8_t      i8StateTransitionTimerIdx;  /*!< Transition timer index */
     }sStateControl;
 
     struct
@@ -68,7 +68,8 @@ typedef struct
         int32_t i32RefIncs[2];
         teREFERENCE_STATE eRefState;
     }sPosRefence;
-
+    
+    int8_t i8SlotPollingTimerIdx;   
     tsREVOLVER sRevolver;                   /*!< Revolver variables */
     tsREFERENCE_SENSOR sReferenceSensor;    /*!< Reference Sensor variables */
 }tsRSU;
@@ -77,6 +78,7 @@ typedef struct
                         tsCOMMAND_INFO_DEFAULTS,\
                         {eRSU_STATE_INIT, eRSU_STATE_INIT,  -1},\
                         {eREF_STATE_INIT},\
+                        -1,\
                         tsREVOLVER_DEFAULTS,\
                         tsREFERENCE_SENSOR_DEFAULTS\
                         }
@@ -87,12 +89,13 @@ typedef struct
 
 void RSUInit(void);
 void RSUStateMachine (void);
-void SetStateTransitionTimeout(uint32_t ui32Timeout_ms);
-void ReferenceSensorEdgeISR(void);
-bool RegisterCommand (tsCOMMAND_INFO);
+// void SetStateTransitionTimeout(uint32_t ui32Timeout_ms);
+void RSUReferenceSensorEdgeISR(void);
+bool RSUProcessCommands (tsCOMMAND_INFO sCmdInfo, char* cReturnString, uint8_t ui8ReturnStringMaxLen, uint8_t *pui8ReturnStrLen);
 void _RSUTransitionToState (void * pUserData);
 void _RSUChangeState (teRSU_STATE eState, uint32_t ui32Timeout_ms);
 void _RSUPosRefChangeState(teREFERENCE_STATE eNewState);
+uint16_t _RSUGetSlotADCValues (uint8_t ui8Pin);
 // void RSUStartMovement();
 
 #endif //_RSU_H_

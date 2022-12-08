@@ -22,7 +22,8 @@
 /******************************************************************************
  * Defines
  *****************************************************************************/
-#define MAXIMUM_RECEIVE_OBJECT_BYTE_LENGTH 20
+#define MAXIMUM_RECEIVE_OBJECT_BYTE_LENGTH  20
+#define MAXIMUM_RETURN_STRING_BYTE_LENGTH   128
 /******************************************************************************
  * Type definitions
  *****************************************************************************/
@@ -60,6 +61,9 @@ typedef enum
     eINTERFACE_ERROR_RSU_BUSY       = 2
 }teINTERFACE_ERRORS;
 
+typedef void (*tTRANSMIT_CB)(char* cMsg, uint16_t ui16Len);
+typedef bool (*tPROCESS_COMMAND_CB)(tsCOMMAND_INFO sCmdInfo, char* cReturnString, uint8_t ui8ReturnStringMaxLen, uint8_t *pui8ReturnStrLen);
+
 typedef struct
 {
     struct
@@ -82,18 +86,24 @@ typedef struct
 
     struct
     {
-        bool bTransmitMessage;
-        teINTERFACE_ERRORS eIfError;
+        uint8_t ui8IfIdx;
+        tTRANSMIT_CB cbTransmit[2];
     }sTransmitParameter;
+
+    tPROCESS_COMMAND_CB cbProcessCommand;
 
     // tsCOMMAND_INFO sCommand;
 }tsINTERFACE;
 
 #define tsINTERFACE_DEFAULTS {{false, false, eINTERFACE_RECEIVE_STATE_IDLE, eINTERFACE_COMMAND_NONE, {eINTERFACE_PARAMETER_NONE}, {0.0f}, 0, 0, {0, 0}},\
-                              {false, eINTERFACE_ERROR_NONE}}
+                              {0, {NULL}},\
+                              NULL}
 /******************************************************************************
  * Function declarations
  *****************************************************************************/
-void InitInterfaces (void);
-void InterfaceReceiveString (uint8_t ui8Data);
+void InitInterfaces (tPROCESS_COMMAND_CB cbProcessCommand);
+bool InterfaceAddTransmitCallback(uint8_t ui8IfIdx, tTRANSMIT_CB txFn);
+void InterfaceReceiveString (uint8_t ui8Data, uint8_t ui8IfIdx);
+void _InterfaceMsgEval (void);
+void _InterfaceTransmit(char* cMsg, u_int16_t ui16MsgLen);
 #endif //_INTERFACE_H_

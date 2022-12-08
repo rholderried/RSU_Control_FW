@@ -27,5 +27,6 @@
 
 uint8_t SCISerialWriteNonBlocking(uint8_t *pui8Buf, uint8_t ui8Len);
 bool SCISerialGetBusyState(void);
+void serialTransmit (char* cMsg, uint16_t ui16Len);
 
 #endif //_CALLBACKS_H_

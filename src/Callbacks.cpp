@@ -55,8 +55,15 @@ void serialEvent (void)
     while (Serial.available())
     {
         Serial.readBytes(&ui8Data, 1);
-        InterfaceReceiveString(ui8Data);
+        InterfaceReceiveString(ui8Data, SERIAL_INTERFACE_INDEX);
     }
+}
+
+//=============================================================================
+void serialTransmit (char* cMsg, uint16_t ui16Len)
+{
+    Serial.write(cMsg, ui16Len);
+    Serial.write('\n');
 }
 
 //=============================================================================

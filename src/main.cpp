@@ -19,6 +19,7 @@
 #include "HWConfig.h"
 #include "ReferenceSensor.h"
 #include "MotorController.h"
+#include "Interface.h"
 #include <SCIMaster.h>
 #include <Timer32Bit.h>
 
@@ -56,12 +57,16 @@ void setup()
   /***************************************************************************/
 
   /****************************************************************************
-   * Initialize the reference sensor
+   * Initialize interfaces
    ***************************************************************************/
-  // InitRefSensor()
-  /***************************************************************************/
+  InitInterfaces (RSUProcessCommands);
 
+  // SCI serial interface
   SCISerial.begin(SCI_BAUD, SERIAL_8N1, SCI_PIN_RX, SCI_PIN_TX);
+  // Serial interface to the RSU controller
+  Serial.begin(SERIAL_BAUD, SERIAL_8N1);
+
+  InterfaceAddTransmitCallback(SERIAL_INTERFACE_INDEX, serialTransmit);
 
   // Initialize the SCI Master
   SCIMasterInit((tsSCI_MASTER_CALLBACKS){.SetVarExternalCB = ProcessSetVarTransfer,
@@ -71,7 +76,8 @@ void setup()
                                          .BlockingTxExternalCB = NULL,
                                          .NonBlockingTxExternalCB = SCISerialWriteNonBlocking,
                                          .GetTxBusyStateExternalCB = SCISerialGetBusyState});
-  
+  /***************************************************************************/
+
   // Initialize the RSU
   RSUInit();
 }

@@ -12,6 +12,7 @@
  * Includes
  *****************************************************************************/
 #include <Arduino.h>
+#include <string.h>
 #include "Callbacks.h"
 #include "ReferenceSensor.h"
 #include "MotorController.h"
@@ -50,7 +51,7 @@ void RSUInit(void)
 
     InitRefSensor(&sRsu.sReferenceSensor);
 
-    bSuccess &= InitRevolver(&sRsu.sRevolver);
+    bSuccess &= InitRevolver(&sRsu.sRevolver, _RSUGetSlotADCValues);
 
     sRsu.bInitialized = bSuccess;
 }
@@ -161,11 +162,13 @@ void RSUStateMachine (void)
 
         default:
             break;
-    }    
+    }
+    
+    RevolverPollSlots(&sRsu.sRevolver);
 }
 
 //=============================================================================
-void ReferenceSensorEdgeISR(void)
+void RSUReferenceSensorEdgeISR(void)
 {
     bool bLastState = sRsu.sReferenceSensor.bLaststate;
     bool bNewState = GetRefSensorState(&sRsu.sReferenceSensor);
@@ -186,15 +189,55 @@ void ReferenceSensorEdgeISR(void)
 }
 
 //=============================================================================
-bool RegisterCommand (tsCOMMAND_INFO sCmdInfo)
+bool RSUProcessCommands (tsCOMMAND_INFO sCmdInfo, char* cReturnString, uint8_t ui8ReturnStringMaxLen, uint8_t *pui8ReturnStrLen)
 {
-    if (sRsu.sStateControl.eRsuState == eRSU_STATE_OPERATIONAL_IDLE)
+    bool bSuccess = true;
+
+    switch (sCmdInfo.eCommandType)
     {
-        sRsu.sNextCmd = sCmdInfo;
-        return true;
+        case eCOMMAND_MOVE_TO_SLOT:
+        
+            // Slot number must be present and valid
+            bSuccess &= ((sCmdInfo.sMotionInfo.ui8TargetSlot >= 1) && (sCmdInfo.sMotionInfo.ui8TargetSlot <= NUMBER_OF_SLOTS));
+
+            // Check if RSU is in IDLE state
+            if (bSuccess)
+            {
+                bSuccess &= (sRsu.sStateControl.eRsuState == eRSU_STATE_OPERATIONAL_IDLE);
+
+                if (bSuccess) 
+                    sRsu.sNextCmd = sCmdInfo;
+                else
+                    *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, "RSU busy.");
+            }
+            else
+                *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, "Target Slot must be defined.");
+        
+            break;
+        
+        case eCOMMAND_GET_SLOT_STATES:
+
+            *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, 
+                                        "S1: %d, S2: %d, S3: %d,S4: %d, S5: %d, S6: %d, S7: %d, S8: %d", 
+                                        sRsu.sRevolver.sSlots[0].ui8Type, sRsu.sRevolver.sSlots[1].ui8Type,
+                                        sRsu.sRevolver.sSlots[2].ui8Type, sRsu.sRevolver.sSlots[3].ui8Type,
+                                        sRsu.sRevolver.sSlots[4].ui8Type, sRsu.sRevolver.sSlots[5].ui8Type,
+                                        sRsu.sRevolver.sSlots[6].ui8Type, sRsu.sRevolver.sSlots[7].ui8Type);
+
+            break;
+
+        // case eCOMMAND_MOVE_TO_NEXT_FREE:
+        //     /// @todo Calculate move to next free slot.
+        //     break;
+
+        default:
+            bSuccess = false;
+            *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, "Not implemented.");
+            break;
     }
-    else
-        return false;
+
+    return bSuccess;
+    
 }
 
 //=============================================================================
@@ -217,7 +260,7 @@ void _RSUPosRefChangeState(teREFERENCE_STATE eNewState)
     {
         case eREF_STATE_INIT:
             // Switch on the interrupt for the reference sensor
-            attachInterrupt(REF_SENSOR_PIN, ReferenceSensorEdgeISR, CHANGE);
+            attachInterrupt(REF_SENSOR_PIN, RSUReferenceSensorEdgeISR, CHANGE);
             break;
 
         case eREF_STATE_START_MOVEMENT:
@@ -233,5 +276,11 @@ void _RSUPosRefChangeState(teREFERENCE_STATE eNewState)
             break;
     }
     sRsu.sPosRefence.eRefState = eNewState;
+}
+
+//=============================================================================
+uint16_t _RSUGetSlotADCValues (uint8_t ui8Pin)
+{
+    return analogRead(ui8Pin);
 }
 

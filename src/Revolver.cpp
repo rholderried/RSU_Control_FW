@@ -29,9 +29,15 @@
 extern tsMOTCONTROLVARS sMotCtrlVars;
 
 /******************************************************************************
+ * Private Globals
+ *****************************************************************************/
+static const uint8_t ui8SlotPins[MAX_NUMBER_OF_SLOTS] = ADC_PINS;
+static const uint16_t ui16ValueThresholds[MAX_NUMBER_OF_SLOTS + 1] = VALUE_THRESHOLDS;
+
+/******************************************************************************
  * Function definitions
  *****************************************************************************/
-bool InitRevolver (tsREVOLVER *psRevolver)
+bool InitRevolver (tsREVOLVER *psRevolver, tGET_ADC_VALUES_CB cbGetADCValues)
 {
     bool bSuccess = true;
     // Assign the GPIO
@@ -47,6 +53,8 @@ bool InitRevolver (tsREVOLVER *psRevolver)
     }
 
     bSuccess &= (psRevolver->sMotion.i8TimerIdx >= 0);
+
+    psRevolver->cbGetADCValues = cbGetADCValues;
 
     return bSuccess;
 }
@@ -181,4 +189,38 @@ void _RevolverSetMotionState(tsREVOLVER *psRevolver, teREVOLVER_MOTION_STATES eN
         default:
             break;
     }
+}
+
+//=============================================================================
+void RevolverPollSlots (tsREVOLVER *psRevolver)
+{
+    uint16_t ui16CurrentValues;
+    uint8_t ui8SlotToPoll;
+    
+    if (psRevolver->ui8CurrentSlot < NUMBER_OF_SLOTS)
+        ui8SlotToPoll = psRevolver->ui8CurrentSlot;
+    else
+        ui8SlotToPoll = 0;
+    
+    ui16CurrentValues = psRevolver->cbGetADCValues(ui8SlotPins[ui8SlotToPoll]);
+
+    for (int8_t j = sizeof(ui16ValueThresholds); j > 0 ; j--)
+    {
+        if (ui16CurrentValues > ui16ValueThresholds[j])
+        {
+            if (j == sizeof(ui16ValueThresholds))
+            {
+                psRevolver->sSlots[ui8SlotToPoll].bInserted = false;
+                psRevolver->sSlots->ui8Type = 0;
+            }
+            else
+            {
+                psRevolver->sSlots[ui8SlotToPoll].bInserted = true;
+                psRevolver->sSlots->ui8Type = j;
+            }
+            break;
+        }
+    }
+
+    psRevolver->ui8CurrentSlot = ++ui8SlotToPoll;
 }
