@@ -29,9 +29,10 @@
  *****************************************************************************/
 typedef enum
 {
-    eINTERFACE_COMMAND_NONE             = -1,
-    eINTERFACE_COMMAND_GO_TO_SLOT       = 0,
-    eINTERFACE_COMMAND_GO_TO_NEXT_FREE  = 1
+    eINTERFACE_COMMAND_NONE                 = -1,
+    eINTERFACE_COMMAND_MOVE_TO_SLOT         = 0,
+    eINTERFACE_COMMAND_MOVE_TO_NEXT_FREE    = 1,
+    eINTERFACE_COMMAND_GET_SLOT_STATES      = 2
 }teINTERFACE_COMMAND;
 
 typedef enum

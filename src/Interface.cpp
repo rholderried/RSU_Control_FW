@@ -28,7 +28,7 @@
  * Private Globals
  *****************************************************************************/
 static tsINTERFACE sInterface = tsINTERFACE_DEFAULTS;
-static const char* cValidCommands[] = {"MS", "MN"};
+static const char* cValidCommands[] = {"MS", "MN", "GS"};
 // static const teINTERFACE_COMMAND eCommandArr[] = {  eINTERFACE_COMMAND_GO_TO_SLOT, 
 //                                                     eINTERFACE_COMMAND_GO_TO_NEXT_FREE};
 static const char* cValidParIDs[] = {"-s", "-a", "-v", "-p"};

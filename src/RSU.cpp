@@ -217,12 +217,21 @@ bool RSUProcessCommands (tsCOMMAND_INFO sCmdInfo, char* cReturnString, uint8_t u
         
         case eCOMMAND_GET_SLOT_STATES:
 
-            *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, 
+            // If a specific slot is requested, return only this one
+            if (sCmdInfo.sMotionInfo.ui8TargetSlot >= 0 && sCmdInfo.sMotionInfo.ui8TargetSlot <= MAX_NUMBER_OF_SLOTS)
+            {
+                *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, "S%d: %d", sRsu.sRevolver.sSlots[sCmdInfo.sMotionInfo.ui8TargetSlot - 1].ui8Type);
+            }
+            // Otherwise return all of them
+            else
+            {
+                *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, 
                                         "S1: %d, S2: %d, S3: %d,S4: %d, S5: %d, S6: %d, S7: %d, S8: %d", 
                                         sRsu.sRevolver.sSlots[0].ui8Type, sRsu.sRevolver.sSlots[1].ui8Type,
                                         sRsu.sRevolver.sSlots[2].ui8Type, sRsu.sRevolver.sSlots[3].ui8Type,
                                         sRsu.sRevolver.sSlots[4].ui8Type, sRsu.sRevolver.sSlots[5].ui8Type,
                                         sRsu.sRevolver.sSlots[6].ui8Type, sRsu.sRevolver.sSlots[7].ui8Type);
+            }
 
             break;
 
