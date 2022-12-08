@@ -40,9 +40,9 @@ static char cReturnString[MAXIMUM_RETURN_STRING_BYTE_LENGTH];
 /******************************************************************************
  * Function definitions
  *****************************************************************************/
-void InitInterfaces (void)
+void InitInterfaces (tPROCESS_COMMAND_CB cbProcessCommand)
 {
-    // Serial.begin(SERIAL_BAUD, SERIAL_8N1);
+    sInterface.cbProcessCommand = cbProcessCommand;
 }
 
 //=============================================================================
