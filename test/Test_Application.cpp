@@ -1,50 +1,67 @@
 /**************************************************************************//**
- * \file ReferenceSensor.cpp
+ * \file Test_Application.cpp
  * \author Roman Holderried
  *
- * \brief Functions related to the reference sensor.
+ * \brief Test functions for the RSU Application.
  * 
  * <b> History </b>
- * 	- 2022-12-05 - File creation
+ * 	- 2022-01-05 - File creation
  *****************************************************************************/
 
 /******************************************************************************
  * Includes
  *****************************************************************************/
-#ifndef DEBUG_NATIVE
-#include <Arduino.h>
 #include <cstdint>
 #include <cstdbool>
-#include "HWConfig.h"
-#include "ReferenceSensor.h"
+#include <time.h>
+#include <windows.h>
+#include "Unittests.h"
+#include "Timer32Bit.h"
 
 /******************************************************************************
  * Defines
  *****************************************************************************/
 
 /******************************************************************************
+ * Imported Globals
+ *****************************************************************************/
+extern tTIMER_CTL_32BIT sTimer32Bit;
+
+/******************************************************************************
  * Private Globals
  *****************************************************************************/
-static tsREFERENCE_SENSOR sRefSens = tsREFERENCE_SENSOR_DEFAULTS;
 
 /******************************************************************************
  * Function definitions
  *****************************************************************************/
-void InitRefSensor (tsREFERENCE_SENSOR *psRefSens)//, tsREFERENCE_SENSOR_CALLBACKS sCallbacks)
+void Test_Module (void (*Fn)(void), uint32_t ui32LoopCnt)
 {
-    // Assign the GPIO
-    // psRefSens->sCallbacks = sCallbacks;
+    uint32_t ui32Loop = 0;
+    clock_t start = clock();
+    double dMsec = 0;
 
-    pinMode(REF_SENSOR_PIN, INPUT_PULLUP);
+    setup();
 
-    psRefSens->bLaststate = (bool)digitalRead(REF_SENSOR_PIN);
+    while (ui32Loop < ui32LoopCnt)
+    {
+        loop();
+        Fn();
+
+        ui32Loop++;
+
+        dMsec = (double)(clock() - start) * 1000 / CLOCKS_PER_SEC;
+
+        // Execute the timer
+        if (dMsec > 1)
+        {
+            Timer32BitExecute();
+            start = clock();
+        }
+        Sleep(1);
+    }
 }
 
-//=============================================================================
-bool GetRefSensorState (tsREFERENCE_SENSOR *psRefSens)
+void Test_Startup (void)
 {
-    psRefSens->bLaststate = (bool)digitalRead(REF_SENSOR_PIN);
 
-    return psRefSens->bLaststate;
 }
-#endif

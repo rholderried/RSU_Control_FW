@@ -1,50 +1,40 @@
 /**************************************************************************//**
- * \file ReferenceSensor.cpp
+ * \file Debug.h
  * \author Roman Holderried
  *
- * \brief Functions related to the reference sensor.
- * 
+ * \brief Main function declarations.
+ *
  * <b> History </b>
- * 	- 2022-12-05 - File creation
+ * 	- 2022-01-05 - File creation
  *****************************************************************************/
 
+#ifndef _DEBUG_H_
+#define _DEBUG_H_
 /******************************************************************************
  * Includes
  *****************************************************************************/
-#ifndef DEBUG_NATIVE
-#include <Arduino.h>
-#include <cstdint>
-#include <cstdbool>
-#include "HWConfig.h"
-#include "ReferenceSensor.h"
+#include <stdint.h>
+#include <stdbool.h>
 
 /******************************************************************************
  * Defines
  *****************************************************************************/
+/** Debug Output Levels */
+#define DBG_OUTPUT_LVL_NONE     0
+#define DBG_OUTPUT_LVL_LOW      1 
+#define DBG_OUTPUT_LVL_MEDIUM   2
+#define DBG_OUTPUT_LVL_HIGH     3
+
+/** Maximum Size of a debug message */
+#define DBG_OUTPUT_MAX_SIZE     255
 
 /******************************************************************************
- * Private Globals
+ * Type definitions
  *****************************************************************************/
-static tsREFERENCE_SENSOR sRefSens = tsREFERENCE_SENSOR_DEFAULTS;
 
 /******************************************************************************
- * Function definitions
+ * Function declarations
  *****************************************************************************/
-void InitRefSensor (tsREFERENCE_SENSOR *psRefSens)//, tsREFERENCE_SENSOR_CALLBACKS sCallbacks)
-{
-    // Assign the GPIO
-    // psRefSens->sCallbacks = sCallbacks;
+void DebugOutput(uint8_t ui8Lvl, const char *format, ...);
 
-    pinMode(REF_SENSOR_PIN, INPUT_PULLUP);
-
-    psRefSens->bLaststate = (bool)digitalRead(REF_SENSOR_PIN);
-}
-
-//=============================================================================
-bool GetRefSensorState (tsREFERENCE_SENSOR *psRefSens)
-{
-    psRefSens->bLaststate = (bool)digitalRead(REF_SENSOR_PIN);
-
-    return psRefSens->bLaststate;
-}
-#endif
+#endif //_DEBUG_H_

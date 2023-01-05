@@ -11,7 +11,12 @@
 /******************************************************************************
  * Includes
  *****************************************************************************/
+#ifndef DEBUG_NATIVE
 #include <Arduino.h>
+#else
+#include <stdio.h>
+#endif
+
 #include <string.h>
 #include "Callbacks.h"
 #include "ReferenceSensor.h"
@@ -73,7 +78,7 @@ void RSUStateMachine (void)
 
             /// @todo Check if SCI interface is up and running
             if (sRsu.bInitialized)
-                _RSUChangeState(eRSU_STATE_POSITION_REFERENCE, INIT_TO_PREOP_TIMEOUT_MS);
+                _RSUChangeState(eRSU_STATE_PREOP, INIT_TO_PREOP_TIMEOUT_MS);
 
             break;
         
@@ -296,7 +301,9 @@ void _RSUPosRefChangeState(teREFERENCE_STATE eNewState)
     {
         case eREF_STATE_INIT:
             // Switch on the interrupt for the reference sensor
+            #ifndef DEBUG_NATIVE
             attachInterrupt(REF_SENSOR_PIN, RSUReferenceSensorEdgeISR, CHANGE);
+            #endif
             break;
 
         case eREF_STATE_START_MOVEMENT:
@@ -308,7 +315,9 @@ void _RSUPosRefChangeState(teREFERENCE_STATE eNewState)
 
         case eREF_STATE_WAIT_FOR_NEG_EDGE:
             sRsu.sPosRefence.i32RefIncs[1] = sMotCtrlVars.i32ActualPositionIncrements;
+            #ifndef DEBUG_NATIVE
             detachInterrupt(REF_SENSOR_PIN);
+            #endif
             break;
     }
     sRsu.sPosRefence.eRefState = eNewState;
@@ -317,6 +326,8 @@ void _RSUPosRefChangeState(teREFERENCE_STATE eNewState)
 //=============================================================================
 uint16_t _RSUGetSlotADCValues (uint8_t ui8Pin)
 {
+    #ifndef DEBUG_NATIVE
     return analogRead(ui8Pin);
+    #endif
 }
 

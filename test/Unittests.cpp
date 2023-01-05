@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unity.h>
 #include "Interface.h"
+#include "Test_Application.h"
 // #include "Common.h"
 
 
@@ -58,16 +59,18 @@ void TransmitSimulator (char* cMsg, uint16_t ui16Len)
 
 int main(void)
 {
-    InitInterfaces(dummy, cInterfaceCommands, 3, cInterfaceIDs, 4);
-    InterfaceAddTransmitCallback(0, TransmitSimulator);
+    // InitInterfaces(dummy, cInterfaceCommands, 3, cInterfaceIDs, 4);
+    // InterfaceAddTransmitCallback(0, TransmitSimulator);
 
-    for (int i = 0; msg[i] != '\0'; i++)
-        InterfaceReceiveString(msg[i], 0);
+    // for (int i = 0; msg[i] != '\0'; i++)
+    //     InterfaceReceiveString(msg[i], 0);
     
-    // for (int i = 0; msg2[i] != '\0'; i++)
-    //     InterfaceReceiveString(msg2[i], 0);
+    // // for (int i = 0; msg2[i] != '\0'; i++)
+    // //     InterfaceReceiveString(msg2[i], 0);
 
-    // for (int i = 0; msg3[i] != '\0'; i++)
-    //     InterfaceReceiveString(msg3[i], 0);
-    return 0;
+    // // for (int i = 0; msg3[i] != '\0'; i++)
+    // //     InterfaceReceiveString(msg3[i], 0);
+    // return 0;
+
+    Test_Module(Test_Startup, 5000);
 }

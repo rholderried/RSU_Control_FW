@@ -11,6 +11,7 @@
 /******************************************************************************
  * Includes
  *****************************************************************************/
+#ifndef DEBUG_NATIVE
 #include <Arduino.h>
 #include <HardwareSerial.h>
 #include <cstdint>
@@ -91,3 +92,4 @@ bool SCISerialGetBusyState(void)
 
     return bBufferSent;
 }
+#endif

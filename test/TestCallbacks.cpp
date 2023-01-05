@@ -1,50 +1,62 @@
 /**************************************************************************//**
- * \file ReferenceSensor.cpp
+ * \file TestCallbacks.cpp
  * \author Roman Holderried
  *
- * \brief Functions related to the reference sensor.
+ * \brief Simulation of the hardware interface for test purposes.
  * 
  * <b> History </b>
- * 	- 2022-12-05 - File creation
+ * 	- 2022-01-05 - File creation
  *****************************************************************************/
 
 /******************************************************************************
  * Includes
  *****************************************************************************/
-#ifndef DEBUG_NATIVE
-#include <Arduino.h>
 #include <cstdint>
 #include <cstdbool>
-#include "HWConfig.h"
+#include <stdio.h>
 #include "ReferenceSensor.h"
-
+#include "Callbacks.h"
 /******************************************************************************
  * Defines
  *****************************************************************************/
 
 /******************************************************************************
+ * Imported Globals
+ *****************************************************************************/
+
+/******************************************************************************
  * Private Globals
  *****************************************************************************/
-static tsREFERENCE_SENSOR sRefSens = tsREFERENCE_SENSOR_DEFAULTS;
 
 /******************************************************************************
  * Function definitions
  *****************************************************************************/
-void InitRefSensor (tsREFERENCE_SENSOR *psRefSens)//, tsREFERENCE_SENSOR_CALLBACKS sCallbacks)
+uint8_t SCISerialWriteNonBlocking(uint8_t *pui8Buf, uint8_t ui8Len)
 {
-    // Assign the GPIO
-    // psRefSens->sCallbacks = sCallbacks;
+    printf("%.*s", ui8Len, (char*)pui8Buf);
 
-    pinMode(REF_SENSOR_PIN, INPUT_PULLUP);
-
-    psRefSens->bLaststate = (bool)digitalRead(REF_SENSOR_PIN);
+    if (*pui8Buf == 0x03)
+        printf("\n");
+        
+    return ui8Len;
 }
 
-//=============================================================================
+bool SCISerialGetBusyState(void)
+{
+    return false;
+}
+
+void serialTransmit (char* cMsg, uint16_t ui16Len)
+{
+    printf("%.*s", ui16Len, cMsg);
+}
+
+void InitRefSensor (tsREFERENCE_SENSOR *psRefSens)
+{
+
+}
+
 bool GetRefSensorState (tsREFERENCE_SENSOR *psRefSens)
 {
-    psRefSens->bLaststate = (bool)digitalRead(REF_SENSOR_PIN);
-
-    return psRefSens->bLaststate;
+    return true;
 }
-#endif

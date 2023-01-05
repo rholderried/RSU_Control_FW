@@ -17,6 +17,7 @@
 #include <stdbool.h>
 
 #include "Common.h"
+#include "Debug.h"
 
 /******************************************************************************
  * Revolver parameter
@@ -44,11 +45,8 @@
 /** Default offset of slot 1 relative to the reference position */
 #define     SLOT1_DEFAULT_OFFSET_FROM_REFERENCE 0.0f
 
-
-
-
-
-
+/** Default Debug Level **/
+#define DBG_OUTPUT_LVL_DEFAULT DBG_OUTPUT_LVL_HIGH
 
 
 /******************************************************************************
