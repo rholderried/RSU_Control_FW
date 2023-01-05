@@ -36,6 +36,12 @@ hw_timer_t *HwTimer = NULL;
 tTIMER_CTL_32BIT sTimer32Bit = tTIMER_32BIT_CTL_DEFAULTS;
 
 /******************************************************************************
+ * Imported globals
+ *****************************************************************************/
+extern const char* cInterfaceCommands[];
+extern const char* cInterfaceIDs[];
+
+/******************************************************************************
  * Function definitions
  *****************************************************************************/
 void setup() 
@@ -59,7 +65,7 @@ void setup()
   /****************************************************************************
    * Initialize interfaces
    ***************************************************************************/
-  InitInterfaces (RSUProcessCommands);
+  InitInterfaces (RSUProcessCommands, cInterfaceCommands, 3, cInterfaceIDs, 4);
 
   // SCI serial interface
   SCISerial.begin(SCI_BAUD, SERIAL_8N1, SCI_PIN_RX, SCI_PIN_TX);

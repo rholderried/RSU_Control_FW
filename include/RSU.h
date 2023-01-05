@@ -19,6 +19,7 @@
 
 #include "Revolver.h"
 #include "ReferenceSensor.h"
+#include "Interface.h"
 
 /******************************************************************************
  * defines
@@ -49,6 +50,21 @@ typedef enum
     eREF_STATE_STOP_MOVEMENT,
     eREF_STATE_READY
 }teREFERENCE_STATE;
+
+typedef enum
+{
+    eINTERFACE_COMMAND_MOVE_TO_SLOT         = 0,
+    eINTERFACE_COMMAND_MOVE_TO_NEXT_FREE    = 1,
+    eINTERFACE_COMMAND_GET_SLOT_STATES      = 2
+}teINTERFACE_COMMAND;
+
+typedef enum
+{
+    eINTERFACE_PARAMETER_SLOT           = 0,
+    eINTERFACE_PARAMETER_ACCELERATION   = 1,
+    eINTERFACE_PARAMETER_VELOCITY       = 2,
+    eINTERFACE_PARAMETER_POSITION       = 3
+}teINTERFACE_PARAMETER;
 
 /** \brief RSU main variable struct*/
 typedef struct
@@ -91,7 +107,7 @@ void RSUInit(void);
 void RSUStateMachine (void);
 // void SetStateTransitionTimeout(uint32_t ui32Timeout_ms);
 void RSUReferenceSensorEdgeISR(void);
-bool RSUProcessCommands (tsCOMMAND_INFO sCmdInfo, char* cReturnString, uint8_t ui8ReturnStringMaxLen, uint8_t *pui8ReturnStrLen);
+bool RSUProcessCommands (tsINTERFACE_RECEIVE_RESULTS *sResults, char* cReturnString, uint8_t ui8ReturnStringMaxLen, uint8_t *pui8ReturnStrLen);
 void _RSUTransitionToState (void * pUserData);
 void _RSUChangeState (teRSU_STATE eState, uint32_t ui32Timeout_ms);
 void _RSUPosRefChangeState(teREFERENCE_STATE eNewState);

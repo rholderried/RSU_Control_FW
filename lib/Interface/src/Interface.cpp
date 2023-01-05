@@ -11,14 +11,11 @@
 /******************************************************************************
  * Includes
  *****************************************************************************/
-#include <cstdint>
-#include <SCIMaster.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "Interface.h"
-#include "HWConfig.h"
-#include "RSU.h"
 
 /******************************************************************************
  * Defines
@@ -28,10 +25,6 @@
  * Private Globals
  *****************************************************************************/
 static tsINTERFACE sInterface = tsINTERFACE_DEFAULTS;
-static const char* cValidCommands[] = {"MS", "MN", "GS"};
-// static const teINTERFACE_COMMAND eCommandArr[] = {  eINTERFACE_COMMAND_GO_TO_SLOT, 
-//                                                     eINTERFACE_COMMAND_GO_TO_NEXT_FREE};
-static const char* cValidParIDs[] = {"-s", "-a", "-v", "-p"};
 static char cReturnString[MAXIMUM_RETURN_STRING_BYTE_LENGTH];
 /******************************************************************************
  * Exported Globals
@@ -40,15 +33,20 @@ static char cReturnString[MAXIMUM_RETURN_STRING_BYTE_LENGTH];
 /******************************************************************************
  * Function definitions
  *****************************************************************************/
-void InitInterfaces (tPROCESS_COMMAND_CB cbProcessCommand)
+void InitInterfaces (tPROCESS_COMMAND_CB cbProcessCommand, const char ** pcCommands, uint8_t ui8CommandLen, const char ** pcIDs, uint8_t ui8IDLen)
 {
     sInterface.cbProcessCommand = cbProcessCommand;
+
+    sInterface.pcCommands       = pcCommands;
+    sInterface.ui8CommandLen    = ui8CommandLen;
+    sInterface.pcIDs            = pcIDs;
+    sInterface.ui8IDLen         = ui8IDLen;
 }
 
 //=============================================================================
 bool InterfaceAddTransmitCallback(uint8_t ui8IfIdx, tTRANSMIT_CB txFn)
 {
-    if (sInterface.sTransmitParameter.cbTransmit[ui8IfIdx] != NULL)
+    if (ui8IfIdx < NUMBER_OF_INTERFACES - 1)
     {
         sInterface.sTransmitParameter.cbTransmit[ui8IfIdx] = txFn;
         return true;
@@ -60,8 +58,8 @@ bool InterfaceAddTransmitCallback(uint8_t ui8IfIdx, tTRANSMIT_CB txFn)
 //=============================================================================
 void InterfaceReceiveString (uint8_t ui8Data, uint8_t ui8IfIdx)
 {
-    static char cPossibleCommands[sizeof(sizeof(cValidCommands)/sizeof(char*))][3] = {{'\0'}};
-    static teINTERFACE_COMMAND ePossibleCommands[sizeof(sizeof(cValidCommands)/sizeof(char*))];
+    static uint8_t ui8PossibleCommands[INTERFACE_MAX_NUMBER_OF_COMMANDS] = {0};
+    // static teINTERFACE_COMMAND ePossibleCommands[sizeof(sizeof(cValidCommands)/sizeof(char*))];
     static uint8_t ui8PossibleCommandsLen = 0;
 
     if (ui8Data == '\n')
@@ -75,17 +73,17 @@ void InterfaceReceiveString (uint8_t ui8Data, uint8_t ui8IfIdx)
         case eINTERFACE_RECEIVE_STATE_IDLE:
         {
             uint8_t i = 0;
-            uint8_t ui8NumOfCmds = sizeof(cValidCommands)/sizeof(char*);
+            // uint8_t ui8NumOfCmds = sizeof(cValidCommands)/sizeof(char*);
 
             ui8PossibleCommandsLen = 0;
 
             // Check the very first letter of every possible command
-            for (; i < ui8NumOfCmds; i++)
+            for (; i < sInterface.ui8CommandLen; i++)
             {
-                if (ui8Data == cValidCommands[i][0])
+                if (ui8Data == sInterface.pcCommands[i][0])
                 {
-                    strcpy(cPossibleCommands[ui8PossibleCommandsLen], cValidCommands[i]);
-                    ePossibleCommands[ui8PossibleCommandsLen] = (teINTERFACE_COMMAND)i;
+                    ui8PossibleCommands[ui8PossibleCommandsLen] = i;
+                    // ePossibleCommands[ui8PossibleCommandsLen] = (teINTERFACE_COMMAND)i;
                     ui8PossibleCommandsLen++;
                 }
             }
@@ -95,7 +93,7 @@ void InterfaceReceiveString (uint8_t ui8Data, uint8_t ui8IfIdx)
             {
                 // sInterface.sReceiveParameter.eCmd = eCommandArr[i];
                 sInterface.sReceiveParameter.ui16MsgByteLen = 0;
-                sInterface.sReceiveParameter.ui8ParNum = 0;
+                sInterface.sResults.ui8ParNum = 0;
                 // sInterface.sReceiveParameter.sRObject.cObj[0] = ui8Data;
                 sInterface.sReceiveParameter.sRObject.ui16ObjLen = 0;
                 sInterface.sReceiveParameter.eInterfaceState = eINTERFACE_RECEIVE_STATE_COMMAND;
@@ -110,14 +108,14 @@ void InterfaceReceiveString (uint8_t ui8Data, uint8_t ui8IfIdx)
             // Check the second letter of every possible command
             for (; i < ui8PossibleCommandsLen; i++)
             {
-                if (ui8Data == cPossibleCommands[i][1])
+                if (ui8Data == sInterface.pcCommands[ui8PossibleCommands[i]][1])
                     break;
             }
 
             // if we meet one command, proceed to receive parameters
             if (i < ui8PossibleCommandsLen)
             {
-                sInterface.sReceiveParameter.eCmd = ePossibleCommands[i];
+                sInterface.sResults.ui8CmdNum = ui8PossibleCommands[i];
                 sInterface.sReceiveParameter.eInterfaceState = eINTERFACE_RECEIVE_STATE_WAIT;
             }
             else
@@ -135,7 +133,7 @@ void InterfaceReceiveString (uint8_t ui8Data, uint8_t ui8IfIdx)
             // Only transition to next state if it is no ' '
             else if (ui8Data != ' ')
             {
-                if (sInterface.sReceiveParameter.ui8ParNum >= INTERFACE_MAX_NUMBER_OF_PARAMETERS)
+                if (sInterface.sResults.ui8ParNum >= INTERFACE_MAX_NUMBER_OF_PARAMETERS)
                 {
                     sInterface.sReceiveParameter.bValid = false;
                     sInterface.sReceiveParameter.eInterfaceState = eINTERFACE_RECEIVE_STATE_WAIT_FOR_MESSAGE_END;
@@ -148,7 +146,15 @@ void InterfaceReceiveString (uint8_t ui8Data, uint8_t ui8IfIdx)
                     }
                     else
                     {
-                        sInterface.sReceiveParameter.eInterfaceState = eINTERFACE_RECEIVE_STATE_GET_PAR;
+                        if(ui8Data < '0' || ui8Data > '9')
+                        {
+                            sInterface.sReceiveParameter.bValid = false;
+                            sInterface.sReceiveParameter.eInterfaceState = eINTERFACE_RECEIVE_STATE_WAIT_FOR_MESSAGE_END;
+                        }
+                        else
+                        {
+                            sInterface.sReceiveParameter.eInterfaceState = eINTERFACE_RECEIVE_STATE_GET_PAR;
+                        }
                     }
                     sInterface.sReceiveParameter.sRObject.cObj[0] = ui8Data;
                     sInterface.sReceiveParameter.sRObject.ui16ObjLen = 1;
@@ -180,26 +186,25 @@ void InterfaceReceiveString (uint8_t ui8Data, uint8_t ui8IfIdx)
                 else
                 {
                     uint8_t i = 0;
-                    uint8_t ui8NumOfIDs = sizeof(cValidParIDs)/sizeof(char*);
+                    // uint8_t ui8NumOfIDs = sizeof(cValidParIDs)/sizeof(char*);
 
                     sInterface.sReceiveParameter.sRObject.cObj[1] = ui8Data;
                     sInterface.sReceiveParameter.sRObject.cObj[2] = '\0';
 
-                    for (; i < ui8NumOfIDs; i++)
+                    for (; i < sInterface.ui8IDLen; i++)
                     {
-                        if (!strcmp(cValidParIDs[i], sInterface.sReceiveParameter.sRObject.cObj))
+                        if (!strcmp(sInterface.pcIDs[i], sInterface.sReceiveParameter.sRObject.cObj))
                             break;
                     }
 
                     // Parameter ID found 
-                    if (i < ui8NumOfIDs)
+                    if (i < sInterface.ui8IDLen)
                     {
-                        sInterface.sReceiveParameter.eParID[sInterface.sReceiveParameter.ui8ParNum] = (teINTERFACE_PARAMETER)i;
-                        sInterface.sReceiveParameter.fParVal[sInterface.sReceiveParameter.ui8ParNum] = 0.0f;
-                        sInterface.sReceiveParameter.ui8ParNum++;
+                        sInterface.sResults.ui8ParID[sInterface.sResults.ui8ParNum] = i;
+                        sInterface.sResults.fParVal[sInterface.sResults.ui8ParNum] = 0.0f;
+                        sInterface.sResults.ui8ParNum++;
                         sInterface.sReceiveParameter.sRObject.ui16ObjLen = 0;
                         sInterface.sReceiveParameter.eInterfaceState = eINTERFACE_RECEIVE_STATE_WAIT;
-
                     }
                     // Not a valid command
                     else
@@ -219,7 +224,7 @@ void InterfaceReceiveString (uint8_t ui8Data, uint8_t ui8IfIdx)
             {
                 sInterface.sReceiveParameter.sRObject.cObj[sInterface.sReceiveParameter.sRObject.ui16ObjLen] = '\0';
                 // Number of parameters are already checked in the former state
-                sInterface.sReceiveParameter.fParVal[sInterface.sReceiveParameter.ui8ParNum - 1] = (float)atof(sInterface.sReceiveParameter.sRObject.cObj);
+                sInterface.sResults.fParVal[sInterface.sResults.ui8ParNum - 1] = (float)atof(sInterface.sReceiveParameter.sRObject.cObj);
                 sInterface.sReceiveParameter.sRObject.ui16ObjLen = 0;
 
                 // Decide if we want to wait for another parameter or if we want to conclude the message
@@ -269,6 +274,9 @@ void InterfaceReceiveString (uint8_t ui8Data, uint8_t ui8IfIdx)
     if (sInterface.sReceiveParameter.eInterfaceState == eINTERFACE_RECEIVE_STATE_READY)
     {
         _InterfaceMsgEval();
+        sInterface.sReceiveParameter.eInterfaceState = eINTERFACE_RECEIVE_STATE_IDLE;
+        sInterface.sReceiveParameter.bValid = false;
+        sInterface.sReceiveParameter.bConclude = false;
     }
 
     if (sInterface.sReceiveParameter.eInterfaceState != eINTERFACE_RECEIVE_STATE_IDLE)
@@ -285,32 +293,8 @@ void _InterfaceMsgEval (void)
 
     if (sInterface.sReceiveParameter.bValid)
     {
-        tsCOMMAND_INFO sCmd = tsCOMMAND_INFO_DEFAULTS;
-        sCmd.eCommandType = (teCOMMAND_TYPE)sInterface.sReceiveParameter.eCmd;
-
-        for (uint8_t i = 0; i < sInterface.sReceiveParameter.ui8ParNum; i++)
-        {
-            switch (sInterface.sReceiveParameter.eParID[i])
-            {
-                case eINTERFACE_PARAMETER_SLOT:
-                    sCmd.sMotionInfo.ui8TargetSlot = (uint8_t)(sInterface.sReceiveParameter.fParVal[i] + 0.5);
-                    break;
-                case eINTERFACE_PARAMETER_ACCELERATION:
-                    sCmd.sMotionInfo.fTargetAcceleration = sInterface.sReceiveParameter.fParVal[i];
-                    break;
-                case eINTERFACE_PARAMETER_VELOCITY:
-                    sCmd.sMotionInfo.fTargetVelocity = sInterface.sReceiveParameter.fParVal[i];
-                    break;
-                case eINTERFACE_PARAMETER_POSITION:
-                    sCmd.sMotionInfo.fTargetPosition = sInterface.sReceiveParameter.fParVal[i];
-                    break;
-                default:
-                    break;
-            }
-        }
-
         // Process the command
-        bSuccess = sInterface.cbProcessCommand(sCmd, cReturnString, MAXIMUM_RETURN_STRING_BYTE_LENGTH, &ui8ReturnStringLen);
+        bSuccess = sInterface.cbProcessCommand(&sInterface.sResults, cReturnString, MAXIMUM_RETURN_STRING_BYTE_LENGTH, &ui8ReturnStringLen);
     }
     else
     {
@@ -318,19 +302,16 @@ void _InterfaceMsgEval (void)
         bSuccess = false;
     }
 
-    cMsg = (char*)malloc(ui8ReturnStringLen + 10);
+    cMsg = (char*)malloc(ui8ReturnStringLen + 11);
 
     if (bSuccess)
-        ui16MsgLen = sprintf(cMsg, "SUCCESS: %s", cReturnString);
+        ui16MsgLen = sprintf(cMsg, "SUCCESS: %s\n", cReturnString);
     else
-        ui16MsgLen = sprintf(cMsg, "ERROR: %s", cReturnString);
+        ui16MsgLen = sprintf(cMsg, "ERROR: %s\n", cReturnString);
 
     _InterfaceTransmit(cMsg, ui16MsgLen);
 
     free(cMsg);
-
-    sInterface.sReceiveParameter.eInterfaceState = eINTERFACE_RECEIVE_STATE_IDLE;
-    sInterface.sReceiveParameter.bValid = false;
 }
 
 //=============================================================================
@@ -339,12 +320,4 @@ void _InterfaceTransmit(char* cMsg, uint16_t ui16MsgLen)
     // Send the return message to the interface where it came from
     if (sInterface.sTransmitParameter.cbTransmit[sInterface.sTransmitParameter.ui8IfIdx] != NULL)
         sInterface.sTransmitParameter.cbTransmit[sInterface.sTransmitParameter.ui8IfIdx](cMsg, ui16MsgLen);
-}
-
-//=============================================================================
-tsCOMMAND_INFO GetNextCommand(void)
-{
-    tsCOMMAND_INFO sCmdInfo = tsCOMMAND_INFO_DEFAULTS;
-
-    return sCmdInfo;
 }

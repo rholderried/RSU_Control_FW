@@ -16,34 +16,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include "Common.h"
-#include "Configuration.h"
+#include "InterfaceConfig.h"
 
 /******************************************************************************
  * Defines
  *****************************************************************************/
-#define MAXIMUM_RECEIVE_OBJECT_BYTE_LENGTH  20
-#define MAXIMUM_RETURN_STRING_BYTE_LENGTH   128
+
 /******************************************************************************
  * Type definitions
  *****************************************************************************/
-typedef enum
-{
-    eINTERFACE_COMMAND_NONE                 = -1,
-    eINTERFACE_COMMAND_MOVE_TO_SLOT         = 0,
-    eINTERFACE_COMMAND_MOVE_TO_NEXT_FREE    = 1,
-    eINTERFACE_COMMAND_GET_SLOT_STATES      = 2
-}teINTERFACE_COMMAND;
-
-typedef enum
-{
-    eINTERFACE_PARAMETER_NONE           = -1,
-    eINTERFACE_PARAMETER_SLOT           = 0,
-    eINTERFACE_PARAMETER_ACCELERATION   = 1,
-    eINTERFACE_PARAMETER_VELOCITY       = 2,
-    eINTERFACE_PARAMETER_POSITION       = 3
-}teINTERFACE_PARAMETER;
-
 typedef enum
 {
     eINTERFACE_RECEIVE_STATE_IDLE,
@@ -62,8 +43,19 @@ typedef enum
     eINTERFACE_ERROR_RSU_BUSY       = 2
 }teINTERFACE_ERRORS;
 
+typedef struct
+{
+    uint8_t                     ui8CmdNum;
+    uint8_t                     ui8ParNum;
+    uint8_t                     ui8ParID[INTERFACE_MAX_NUMBER_OF_PARAMETERS];
+    float                       fParVal[INTERFACE_MAX_NUMBER_OF_PARAMETERS];
+}tsINTERFACE_RECEIVE_RESULTS;
+
+#define tsINTERFACE_RECEIVE_RESULTS_DEFAULTS {0, 0, {'\0'}, {0.0f}}
+
+
 typedef void (*tTRANSMIT_CB)(char* cMsg, uint16_t ui16Len);
-typedef bool (*tPROCESS_COMMAND_CB)(tsCOMMAND_INFO sCmdInfo, char* cReturnString, uint8_t ui8ReturnStringMaxLen, uint8_t *pui8ReturnStrLen);
+typedef bool (*tPROCESS_COMMAND_CB)(tsINTERFACE_RECEIVE_RESULTS *sResults, char* cReturnString, uint8_t ui8ReturnStringMaxLen, uint8_t *pui8ReturnStrLen);
 
 typedef struct
 {
@@ -72,11 +64,7 @@ typedef struct
         bool                        bValid;
         bool                        bConclude;
         teINTERFACE_RECEIVE_STATE   eInterfaceState;
-        teINTERFACE_COMMAND         eCmd;
-        teINTERFACE_PARAMETER       eParID[INTERFACE_MAX_NUMBER_OF_PARAMETERS];
-        float                       fParVal[INTERFACE_MAX_NUMBER_OF_PARAMETERS];
         uint16_t                    ui16MsgByteLen;
-        uint8_t                     ui8ParNum;
 
         struct
         {
@@ -88,23 +76,35 @@ typedef struct
     struct
     {
         uint8_t ui8IfIdx;
-        tTRANSMIT_CB cbTransmit[2];
+        tTRANSMIT_CB cbTransmit[NUMBER_OF_INTERFACES];
     }sTransmitParameter;
+
+    tsINTERFACE_RECEIVE_RESULTS sResults;
+
+    const char ** pcCommands;
+    uint8_t ui8CommandLen;
+    const char** pcIDs;
+    uint8_t ui8IDLen;
 
     tPROCESS_COMMAND_CB cbProcessCommand;
 
     // tsCOMMAND_INFO sCommand;
 }tsINTERFACE;
 
-#define tsINTERFACE_DEFAULTS {{false, false, eINTERFACE_RECEIVE_STATE_IDLE, eINTERFACE_COMMAND_NONE, {eINTERFACE_PARAMETER_NONE}, {0.0f}, 0, 0, {0, 0}},\
+#define tsINTERFACE_DEFAULTS {{false, false, eINTERFACE_RECEIVE_STATE_IDLE, 0, 0, {0, 0}},\
                               {0, {NULL}},\
+                              tsINTERFACE_RECEIVE_RESULTS_DEFAULTS,\
+                              NULL,\
+                              0,\
+                              NULL,\
+                              0,\
                               NULL}
 /******************************************************************************
  * Function declarations
  *****************************************************************************/
-void InitInterfaces (tPROCESS_COMMAND_CB cbProcessCommand);
+void InitInterfaces (tPROCESS_COMMAND_CB cbProcessCommand, const char ** pcCommands, uint8_t ui8CommandLen, const char ** pcIDs, uint8_t ui8IDLen);
 bool InterfaceAddTransmitCallback(uint8_t ui8IfIdx, tTRANSMIT_CB txFn);
 void InterfaceReceiveString (uint8_t ui8Data, uint8_t ui8IfIdx);
 void _InterfaceMsgEval (void);
-void _InterfaceTransmit(char* cMsg, u_int16_t ui16MsgLen);
+void _InterfaceTransmit(char* cMsg, uint16_t ui16MsgLen);
 #endif //_INTERFACE_H_

@@ -44,9 +44,6 @@
 /** Default offset of slot 1 relative to the reference position */
 #define     SLOT1_DEFAULT_OFFSET_FROM_REFERENCE 0.0f
 
-/** Maximum number of parameters that can be submitted by the interface */
-#define INTERFACE_MAX_NUMBER_OF_PARAMETERS 5
-
 
 
 

@@ -26,6 +26,8 @@
  * Globals
  *****************************************************************************/
 tsRSU sRsu = tsRSU_DEFAULTS;
+const char* cInterfaceCommands[] = {"MS", "MN", "GS"};
+const char* cInterfaceIDs[] = {"-s", "-a", "-v", "-p"};
 
 extern tsMOTCONTROLVARS sMotCtrlVars;
 
@@ -189,16 +191,41 @@ void RSUReferenceSensorEdgeISR(void)
 }
 
 //=============================================================================
-bool RSUProcessCommands (tsCOMMAND_INFO sCmdInfo, char* cReturnString, uint8_t ui8ReturnStringMaxLen, uint8_t *pui8ReturnStrLen)
+bool RSUProcessCommands (tsINTERFACE_RECEIVE_RESULTS *sResults, char* cReturnString, uint8_t ui8ReturnStringMaxLen, uint8_t *pui8ReturnStrLen)
 {
     bool bSuccess = true;
+    tsCOMMAND_INFO sCmd = tsCOMMAND_INFO_DEFAULTS;
 
-    switch (sCmdInfo.eCommandType)
+    // Get the commands
+    sCmd.eCommandType = (teCOMMAND_TYPE)sResults->ui8CmdNum;
+
+    for (uint8_t i = 0; i < sResults->ui8ParNum; i++)
+    {
+        switch ((teINTERFACE_PARAMETER)sResults->ui8ParID[i])
+        {
+            case eINTERFACE_PARAMETER_SLOT:
+                sCmd.sMotionInfo.ui8TargetSlot = (uint8_t)(sResults->fParVal[i] + 0.5);
+                break;
+            case eINTERFACE_PARAMETER_ACCELERATION:
+                sCmd.sMotionInfo.fTargetAcceleration = sResults->fParVal[i];
+                break;
+            case eINTERFACE_PARAMETER_VELOCITY:
+                sCmd.sMotionInfo.fTargetVelocity = sResults->fParVal[i];
+                break;
+            case eINTERFACE_PARAMETER_POSITION:
+                sCmd.sMotionInfo.fTargetPosition = sResults->fParVal[i];
+                break;
+            default:
+                break;
+        }
+    }
+
+    switch (sCmd.eCommandType)
     {
         case eCOMMAND_MOVE_TO_SLOT:
         
             // Slot number must be present and valid
-            bSuccess &= ((sCmdInfo.sMotionInfo.ui8TargetSlot >= 1) && (sCmdInfo.sMotionInfo.ui8TargetSlot <= NUMBER_OF_SLOTS));
+            bSuccess &= ((sCmd.sMotionInfo.ui8TargetSlot >= 1) && (sCmd.sMotionInfo.ui8TargetSlot <= NUMBER_OF_SLOTS));
 
             // Check if RSU is in IDLE state
             if (bSuccess)
@@ -206,7 +233,7 @@ bool RSUProcessCommands (tsCOMMAND_INFO sCmdInfo, char* cReturnString, uint8_t u
                 bSuccess &= (sRsu.sStateControl.eRsuState == eRSU_STATE_OPERATIONAL_IDLE);
 
                 if (bSuccess) 
-                    sRsu.sNextCmd = sCmdInfo;
+                    sRsu.sNextCmd = sCmd;
                 else
                     *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, "RSU busy.");
             }
@@ -218,9 +245,9 @@ bool RSUProcessCommands (tsCOMMAND_INFO sCmdInfo, char* cReturnString, uint8_t u
         case eCOMMAND_GET_SLOT_STATES:
 
             // If a specific slot is requested, return only this one
-            if (sCmdInfo.sMotionInfo.ui8TargetSlot >= 0 && sCmdInfo.sMotionInfo.ui8TargetSlot <= MAX_NUMBER_OF_SLOTS)
+            if (sCmd.sMotionInfo.ui8TargetSlot >= 0 && sCmd.sMotionInfo.ui8TargetSlot <= MAX_NUMBER_OF_SLOTS)
             {
-                *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, "S%d: %d", sRsu.sRevolver.sSlots[sCmdInfo.sMotionInfo.ui8TargetSlot - 1].ui8Type);
+                *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, "S%d: %d", sRsu.sRevolver.sSlots[sCmd.sMotionInfo.ui8TargetSlot - 1].ui8Type);
             }
             // Otherwise return all of them
             else

@@ -20,8 +20,8 @@
  * defines
  *****************************************************************************/
 
-#define REVOLVER_VELOCITY_POSITIVE(vel) (vel < 0 ? vel * -1 : vel)
-#define REVOLVER_VELOCITY_NEGATIVE(vel) (vel < 0 ? vel : vel * -1)
+// #define REVOLVER_VELOCITY_POSITIVE(vel) (vel < 0 ? vel * -1 : vel)
+// #define REVOLVER_VELOCITY_NEGATIVE(vel) (vel < 0 ? vel : vel * -1)
 
 #define MAX_NUMBER_OF_SLOTS 8
 
