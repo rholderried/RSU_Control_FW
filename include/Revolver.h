@@ -68,10 +68,10 @@ typedef enum
 typedef struct
 {
     bool    bInserted;  /*!< Flags true if cylinder is inserted */
-    uint8_t ui8Type;    /*!< Cylinder type that is inserted */
+    int8_t  i8Type;    /*!< Cylinder type that is inserted */
 }tsSLOT;
 
-#define tsSLOT_DEFAULTS {false, 0}
+#define tsSLOT_DEFAULTS {false, -1}
 
 typedef uint16_t (*tGET_ADC_VALUES_CB)(uint8_t ui8Pin);
 

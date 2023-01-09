@@ -157,7 +157,8 @@ void RSUStateMachine (void)
                     case eCOMMAND_MOVE_TO_SLOT:
 
                         if(RevolverStartMovementToSlot(&sRsu.sRevolver, sRsu.sNextCmd.sMotionInfo))
-                            sRsu.sStateControl.eRsuState = eRSU_STATE_OPERATIONAL_MOVING;
+                            // sRsu.sStateControl.eRsuState = eRSU_STATE_OPERATIONAL_MOVING;
+                            _RSUChangeState(eRSU_STATE_OPERATIONAL_MOVING, 0);
                         break;
 
                     default:
@@ -251,31 +252,34 @@ bool RSUProcessCommands (tsINTERFACE_RECEIVE_RESULTS *sResults, char* cReturnStr
                 bSuccess &= (sRsu.sStateControl.eRsuState == eRSU_STATE_OPERATIONAL_IDLE);
 
                 if (bSuccess) 
+                {
+                    *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, "Move to slot %d.", sCmd.sMotionInfo.ui8TargetSlot);
                     sRsu.sNextCmd = sCmd;
+                }
                 else
                     *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, "RSU busy.");
             }
             else
-                *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, "Target Slot must be defined.");
+                *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, "Target slot number must be in interval [1 ... %d].", NUMBER_OF_SLOTS);
         
             break;
         
         case eCOMMAND_GET_SLOT_STATES:
 
             // If a specific slot is requested, return only this one
-            if (sCmd.sMotionInfo.ui8TargetSlot >= 0 && sCmd.sMotionInfo.ui8TargetSlot <= MAX_NUMBER_OF_SLOTS)
+            if (sCmd.sMotionInfo.ui8TargetSlot > 0 && sCmd.sMotionInfo.ui8TargetSlot <= MAX_NUMBER_OF_SLOTS)
             {
-                *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, "S%d: %d", sRsu.sRevolver.sSlots[sCmd.sMotionInfo.ui8TargetSlot - 1].ui8Type);
+                *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, "S%d: %d", sRsu.sRevolver.sSlots[sCmd.sMotionInfo.ui8TargetSlot - 1].i8Type);
             }
             // Otherwise return all of them
             else
             {
                 *pui8ReturnStrLen = snprintf(cReturnString, ui8ReturnStringMaxLen, 
-                                        "S1: %d, S2: %d, S3: %d,S4: %d, S5: %d, S6: %d, S7: %d, S8: %d", 
-                                        sRsu.sRevolver.sSlots[0].ui8Type, sRsu.sRevolver.sSlots[1].ui8Type,
-                                        sRsu.sRevolver.sSlots[2].ui8Type, sRsu.sRevolver.sSlots[3].ui8Type,
-                                        sRsu.sRevolver.sSlots[4].ui8Type, sRsu.sRevolver.sSlots[5].ui8Type,
-                                        sRsu.sRevolver.sSlots[6].ui8Type, sRsu.sRevolver.sSlots[7].ui8Type);
+                                        "S1: %d, S2: %d, S3: %d, S4: %d, S5: %d, S6: %d, S7: %d, S8: %d", 
+                                        sRsu.sRevolver.sSlots[0].i8Type, sRsu.sRevolver.sSlots[1].i8Type,
+                                        sRsu.sRevolver.sSlots[2].i8Type, sRsu.sRevolver.sSlots[3].i8Type,
+                                        sRsu.sRevolver.sSlots[4].i8Type, sRsu.sRevolver.sSlots[5].i8Type,
+                                        sRsu.sRevolver.sSlots[6].i8Type, sRsu.sRevolver.sSlots[7].i8Type);
             }
 
             break;
@@ -344,8 +348,11 @@ void _RSUPosRefChangeState(teREFERENCE_STATE eNewState)
 //=============================================================================
 uint16_t _RSUGetSlotADCValues (uint8_t ui8Pin)
 {
+    uint16_t ui16Read;
     #ifndef DEBUG_NATIVE
-    return analogRead(ui8Pin);
+    ui16Read = analogRead(ui8Pin);
     #endif
+    // DebugOutput(DBG_OUTPUT_LVL_HIGH, "Pin: %d, Read: %d\n", ui8Pin, ui16Read);
+    return ui16Read;
 }
 

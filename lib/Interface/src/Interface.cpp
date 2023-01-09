@@ -286,10 +286,12 @@ void InterfaceReceiveString (uint8_t ui8Data, uint8_t ui8IfIdx)
 //=============================================================================
 void _InterfaceMsgEval (void)
 {
-    uint8_t ui8ReturnStringLen;
+    uint8_t ui8ReturnStringLen = 0;
     char* cMsg;
     uint16_t ui16MsgLen;
     bool bSuccess;
+
+    cReturnString[0] = '\0';
 
     if (sInterface.sReceiveParameter.bValid)
     {
@@ -305,9 +307,19 @@ void _InterfaceMsgEval (void)
     cMsg = (char*)malloc(ui8ReturnStringLen + 11);
 
     if (bSuccess)
-        ui16MsgLen = sprintf(cMsg, "SUCCESS: %s\n", cReturnString);
+    {
+        if (ui8ReturnStringLen > 0)
+            ui16MsgLen = sprintf(cMsg, "SUCCESS: %s", cReturnString);
+        else
+            ui16MsgLen = sprintf(cMsg, "SUCCESS");
+    }
     else
-        ui16MsgLen = sprintf(cMsg, "ERROR: %s\n", cReturnString);
+    {
+        if (ui8ReturnStringLen > 0)
+            ui16MsgLen = sprintf(cMsg, "ERROR: %s", cReturnString);
+        else
+            ui16MsgLen = sprintf(cMsg, "ERROR");
+    }
 
     _InterfaceTransmit(cMsg, ui16MsgLen);
 

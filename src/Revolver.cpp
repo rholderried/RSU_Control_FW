@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <cstdbool>
 #include <Timer32Bit.h>
+#include <Arduino.h>
 #include "HWConfig.h"
 #include "Configuration.h"
 #include "MotorController.h"
@@ -43,7 +44,11 @@ bool InitRevolver (tsREVOLVER *psRevolver, tGET_ADC_VALUES_CB cbGetADCValues)
     // Assign the GPIO
     // psRefSens->sCallbacks = sCallbacks;
 
-    // psRefSens->bLaststate = (bool)digitalRead(REF_SENSOR_PIN);
+    // Initialize the adc pins
+    for (uint8_t i = 0; i < sizeof(ui8SlotPins); i++)
+    {
+        pinMode(ui8SlotPins[i], INPUT);
+    }
 
     // Initialize the Motion timer
     {
@@ -125,17 +130,6 @@ void RevolverMotionStateMachine(tsREVOLVER *psRevolver)
         
         case eREVOLVER_MOTION_STATE_FINISH_MOVEMENT:
             {
-                if (!psRevolver->sMotion.bAbort)
-                {
-                    // Poll the Motioncontroller active flag
-                    MotCtrlGetVar(  MOTCTRL_VAR_NUM_MOTIONCONTROLLER_ACTIVE_FLAG, 
-                                    [](void* pDat){*(bool*)pDat = sMotCtrlVars.bMotionControllerActive;},
-                                    &psRevolver->sMotion.bMotionFinished);
-                }
-                else
-                {
-                    /// @todo Abort the movement (Motioncontroller soft stop function must be implemented)
-                }
                 
                 // Wait a bit if the motion is not finished
                 if(!psRevolver->sMotion.bMotionFinished)
@@ -153,6 +147,20 @@ void RevolverMotionStateMachine(tsREVOLVER *psRevolver)
                 else
                 {
                     _RevolverSetMotionState(psRevolver, eREVOLVER_MOTION_STATE_IDLE);
+                    psRevolver->sMotion.bMotionFinished = false;
+                    return;
+                }
+
+                if (!psRevolver->sMotion.bAbort)
+                {
+                    // Poll the Motioncontroller active flag
+                    MotCtrlGetVar(  MOTCTRL_VAR_NUM_MOTIONCONTROLLER_ACTIVE_FLAG, 
+                                    [](void* pDat){*(bool*)pDat = !sMotCtrlVars.bMotionControllerActive;},
+                                    &psRevolver->sMotion.bMotionFinished);
+                }
+                else
+                {
+                    /// @todo Abort the movement (Motioncontroller soft stop function must be implemented)
                 }
                 
             }
@@ -204,19 +212,19 @@ void RevolverPollSlots (tsREVOLVER *psRevolver)
     
     ui16CurrentValues = psRevolver->cbGetADCValues(ui8SlotPins[ui8SlotToPoll]);
 
-    for (int8_t j = sizeof(ui16ValueThresholds); j > 0 ; j--)
+    for (int8_t j = MAX_NUMBER_OF_SLOTS; j >= 0 ; j--)
     {
         if (ui16CurrentValues > ui16ValueThresholds[j])
         {
-            if (j == sizeof(ui16ValueThresholds))
+            if (j == MAX_NUMBER_OF_SLOTS)
             {
                 psRevolver->sSlots[ui8SlotToPoll].bInserted = false;
-                psRevolver->sSlots->ui8Type = 0;
+                psRevolver->sSlots[ui8SlotToPoll].i8Type = 0;
             }
             else
             {
                 psRevolver->sSlots[ui8SlotToPoll].bInserted = true;
-                psRevolver->sSlots->ui8Type = j;
+                psRevolver->sSlots[ui8SlotToPoll].i8Type = j + 1;
             }
             break;
         }

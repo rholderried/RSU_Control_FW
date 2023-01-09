@@ -20,8 +20,8 @@
 /******************************************************************************
  * Defines
  *****************************************************************************/
-#define REFERENCE_SENSOR_STATE_ON   true
-#define REFERENCE_SENSOR_STATE_OFF  false
+#define REFERENCE_SENSOR_STATE_ON   false
+#define REFERENCE_SENSOR_STATE_OFF  true
 #define REFERENCE_SENSOR_EDGE_POS   true
 #define REFERENCE_SENSOR_EDGE_NEG   false
 

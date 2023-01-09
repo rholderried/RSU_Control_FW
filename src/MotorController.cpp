@@ -177,6 +177,8 @@ teTRANSFER_ACK ProcessGetVarTransfer (teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num
             break;
     }
 
+    // DebugOutput(DBG_OUTPUT_LVL_HIGH, "GetVar response received: %d\n", i16Num);
+
     // Copy data by using the appropriate data type
     if (ui16Idx < NUMBER_OF_MOTORCONTROLLER_VARS)
     {
@@ -204,6 +206,11 @@ teTRANSFER_ACK ProcessGetVarTransfer (teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num
                 *(float*)sSciVarTable[ui16Idx].pVar = *(float*)&ui32Data;
                 break;
         }
+
+        // if (sSciVarTable[ui16Idx].eDtype == eDTYPE_F32)
+        //     DebugOutput(DBG_OUTPUT_LVL_HIGH, "Value: %f\n", *(float*)&ui32Data);
+        // else
+        //     DebugOutput(DBG_OUTPUT_LVL_HIGH, "Value: %d\n", ui32Data);
 
         // Call the Transfer callback
         if (sMotCtrl.sTransfer.TransferRdyCb)

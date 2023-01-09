@@ -34,10 +34,10 @@
 
 // Movement velocity
 /** Angular velocity of the revolver movement in nominal operation [rad/s] */
-#define MOVEMENT_ANGULAR_VELOCITY   6.28f
+#define MOVEMENT_ANGULAR_VELOCITY   3.14f
 
 /** Angular acceleration of the revolver movement in nominal operation [rad/s] */
-#define MOVEMENT_ANGULAR_ACCELERATION 3.14f
+#define MOVEMENT_ANGULAR_ACCELERATION 2.0f
 
 /** Index of the motion controller implemented on the motor controller */
 // #define MOTION_CONTROLLER_INSTANCE 0
