@@ -13,6 +13,7 @@
  *****************************************************************************/
 #include <cstdint>
 #include <SCIMaster.h>
+#include "Debug.h"
 #include "MotorController.h"
 
 /******************************************************************************
@@ -200,6 +201,8 @@ teTRANSFER_ACK ProcessGetVarTransfer (teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num
 teTRANSFER_ACK ProcessCommandTransfer(teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num, uint32_t *pui32Data, uint8_t ui8DataCnt, uint16_t ui16ErrNum)
 {
     teTRANSFER_ACK eTAck = eTRANSFER_ACK_ABORT;
+
+    DebugOutput(DBG_OUTPUT_LVL_HIGH, "Command response received: %d", i16Num);
 
     if (eAck == eREQUEST_ACK_STATUS_SUCCESS || eAck == eREQUEST_ACK_STATUS_SUCCESS_DATA)
     {

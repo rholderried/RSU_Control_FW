@@ -21,6 +21,7 @@
 #include "MotorController.h"
 #include "HWConfig.h"
 #include "Interface.h"
+#include "Debug.h"
 
 
 /******************************************************************************
@@ -41,7 +42,7 @@ extern tsMOTCONTROLVARS sMotControlVars;
 
 
 //=============================================================================
-void SCI_SERIAL_EVENT_CALLBACK(void)
+void SCIReceiveByte(void)
 {
     uint8_t ui8Data[RX_PACKET_LENGTH];
     
@@ -70,6 +71,7 @@ void serialTransmit (char* cMsg, uint16_t ui16Len)
 //=============================================================================
 uint8_t SCISerialWriteNonBlocking(uint8_t *pui8Buf, uint8_t ui8Len)
 {
+    DebugOutput(DBG_OUTPUT_LVL_HIGH, "Send SCI message.");
     if(SCISerial.availableForWrite() >= ui8Len)
     {
         SCISerial.write(pui8Buf, ui8Len);
@@ -82,14 +84,13 @@ uint8_t SCISerialWriteNonBlocking(uint8_t *pui8Buf, uint8_t ui8Len)
 //=============================================================================
 bool SCISerialGetBusyState(void)
 {
-    bool bBufferSent;
-
+    bool bBusy;
     #if TX_PACKET_LENGTH > 126
-    bBufferSent = (bool)(SCISerial.availableForWrite() >= TX_PACKET_LENGTH + 2);
+    bBusy = !((bool)(SCISerial.availableForWrite() >= TX_PACKET_LENGTH + 2));
     #else
-    bBufferSent = (bool)(SCISerial.availableForWrite() >= 128)
+    bBusy = !((bool)(SCISerial.availableForWrite() >= 128));
     #endif
 
-    return bBufferSent;
+    return bBusy;
 }
 #endif

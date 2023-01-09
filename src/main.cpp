@@ -82,7 +82,8 @@ void setup()
   SCISerial.setTxBufferSize(TX_PACKET_LENGTH + 2);
   #endif
 
-  Serial.begin(115200, SERIAL_8N1);
+  // Serial interface to the RSU controller
+  Serial.begin(SERIAL_BAUD, SERIAL_8N1);
 
   DebugOutput(DBG_OUTPUT_LVL_HIGH, "Begin application setup...\n");
 
@@ -93,6 +94,7 @@ void setup()
   timerAttachInterrupt(HwTimer, Timer32BitExecute, false);
   // Set the timer period value for a timeout every 1 ms
   timerAlarmWrite(HwTimer, 80000000/(HW_TIMER_CFG_DIV * 1000), true);
+  timerAlarmEnable(HwTimer);
   timerStart(HwTimer);
   #endif
   /***************************************************************************/
@@ -101,15 +103,15 @@ void setup()
    * Initialize interfaces
    ***************************************************************************/
   InitInterfaces (RSUProcessCommands, cInterfaceCommands, 3, cInterfaceIDs, 4);
+  InterfaceAddTransmitCallback(SERIAL_INTERFACE_INDEX, serialTransmit);
 
   #ifndef DEBUG_NATIVE
   // SCI serial interface
   SCISerial.begin(SCI_BAUD, SERIAL_8N1, SCI_PIN_RX, SCI_PIN_TX);
-  // Serial interface to the RSU controller
-  Serial.begin(SERIAL_BAUD, SERIAL_8N1);
+  SCISerial.setRxFIFOFull(1);
+  SCISerial.onReceive(SCIReceiveByte, false);
   #endif
 
-  InterfaceAddTransmitCallback(SERIAL_INTERFACE_INDEX, serialTransmit);
 
   // Initialize the SCI Master
   SCIMasterInit((tsSCI_MASTER_CALLBACKS){.SetVarExternalCB = ProcessSetVarTransfer,

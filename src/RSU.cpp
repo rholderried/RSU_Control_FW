@@ -73,6 +73,12 @@ void RSUStateMachine (void)
     if (sRsu.sStateControl.eRsuState != sRsu.sStateControl.eNextState)
         return;
 
+    if (!sRsu.sStateControl.bStateTransitionMessageSent)
+    {
+        DebugOutput(DBG_OUTPUT_LVL_HIGH, "Transition to RSU state %d complete.\n", sRsu.sStateControl.eRsuState);
+        sRsu.sStateControl.bStateTransitionMessageSent = true;
+    }
+
     switch (sRsu.sStateControl.eRsuState)
     {
         case eRSU_STATE_INIT:
@@ -292,8 +298,10 @@ void _RSUTransitionToState (void * pUserData)
 //=============================================================================
 void _RSUChangeState (teRSU_STATE eNewState, uint32_t ui32Timeout_ms)
 {
+    DebugOutput(DBG_OUTPUT_LVL_HIGH, "Change RSU state: %d\n", eNewState);
     sRsu.sStateControl.eNextState = eNewState;
     Timer32BitSetValue(sRsu.sStateControl.i8StateTransitionTimerIdx, true, ui32Timeout_ms);
+    sRsu.sStateControl.bStateTransitionMessageSent = false;
 }
 
 //=============================================================================

@@ -74,6 +74,7 @@ typedef struct
 
     struct
     {
+        bool        bStateTransitionMessageSent;/*!< Flag controls the transmission of the state transition message */
         teRSU_STATE eRsuState;                  /*!< Current State */
         teRSU_STATE eNextState;                 /*!< Next State */
         int8_t      i8StateTransitionTimerIdx;  /*!< Transition timer index */
@@ -92,7 +93,7 @@ typedef struct
 
 #define tsRSU_DEFAULTS {false,\
                         tsCOMMAND_INFO_DEFAULTS,\
-                        {eRSU_STATE_INIT, eRSU_STATE_INIT,  -1},\
+                        {false, eRSU_STATE_INIT, eRSU_STATE_INIT,  -1},\
                         {eREF_STATE_INIT},\
                         -1,\
                         tsREVOLVER_DEFAULTS,\
