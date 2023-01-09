@@ -24,6 +24,7 @@
 #include "Configuration.h"
 #include "HWConfig.h"
 #include "Interface.h"
+#include "Debug.h"
 
 #include "RSU.h"
 

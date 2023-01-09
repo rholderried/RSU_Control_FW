@@ -77,10 +77,14 @@ void setup()
   #ifndef DEBUG_NATIVE
   // The size of the TX buffer must be exactly known because the callback
   // which determines the TX busy state relies on this information.
-  DebugOutput(DBG_OUTPUT_LVL_HIGH, "Initializing SCI Serial");
+  
   #if TX_PACKET_LENGTH > 126
   SCISerial.setTxBufferSize(TX_PACKET_LENGTH + 2);
   #endif
+
+  Serial.begin(115200, SERIAL_8N1);
+
+  DebugOutput(DBG_OUTPUT_LVL_HIGH, "Begin application setup...\n");
 
   /****************************************************************************
    * Initialize timer (Timer base frequency == 80 MHz, minimum divider == 2 -> Timer frequency == 40 MHz)
@@ -120,7 +124,8 @@ void setup()
   // Initialize the RSU
   RSUInit();
 
-  DebugOutput(DBG_OUTPUT_LVL_HIGH, "Application setup complete.");
+  DebugOutput(DBG_OUTPUT_LVL_HIGH, "Application setup complete.\n");
+  DebugOutput(DBG_OUTPUT_LVL_HIGH, "Starting application loop...\n");
 }
 
 //=============================================================================
