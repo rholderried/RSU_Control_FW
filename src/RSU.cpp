@@ -59,6 +59,7 @@ void RSUInit(void)
     }
 
     InitRefSensor(&sRsu.sReferenceSensor);
+    sRsu.sPosRefence.fPosRefScale = (float)(RSU_GEAR_RATIO * MOTOR_GEAR_RATIO * MOTOR_NUMBER_OF_POLE_PAIRS * 6) / (2 * PI);
 
     bSuccess &= InitRevolver(&sRsu.sRevolver, _RSUGetSlotADCValues);
 
@@ -102,8 +103,10 @@ void RSUStateMachine (void)
                 switch(sRsu.sPosRefence.eRefState)
                 {
                     case eREF_STATE_INIT:
-                        MotCtrlGetVar(MOTCTRL_VAR_NUM_MOTION_CONTROLLER_SCALE, [](void*){_RSUPosRefChangeState(eREF_STATE_START_MOVEMENT);}, NULL);
-                        break;
+                        {
+                            MotCtrlSetVar(MOTCTRL_VAR_NUM_MOTION_CONTROLLER_SCALE, *(uint32_t*)&sRsu.sPosRefence.fPosRefScale, [](void*){_RSUPosRefChangeState(eREF_STATE_START_MOVEMENT);}, NULL);
+                            break;
+                        }
 
                     // Submit the command for starting reference position search movement
                     case eREF_STATE_START_MOVEMENT:
@@ -128,10 +131,12 @@ void RSUStateMachine (void)
 
                     case eREF_STATE_READY:
                         {
-                            float fPos1 = (float)sRsu.sPosRefence.i32RefIncs[0] / sMotCtrlVars.fMotionControllerScale;
-                            float fPos2 = (float)sRsu.sPosRefence.i32RefIncs[1] / sMotCtrlVars.fMotionControllerScale;
+                            float fPos1 = (float)sRsu.sPosRefence.i32RefIncs[0] / sRsu.sPosRefence.fPosRefScale;
+                            float fPos2 = (float)sRsu.sPosRefence.i32RefIncs[1] / sRsu.sPosRefence.fPosRefScale;
+                            float fRes = (fPos1 + fPos2) / 2.0f;
                             
-                            RevolverInitSlots(&sRsu.sRevolver, (fPos1 + fPos2) / 2.0f);
+                            RevolverInitSlots(&sRsu.sRevolver, fRes);
+                            DebugOutput(DBG_OUTPUT_LVL_HIGH, "Position Reference ready. Result angle: %f\n", fRes);
 
                             _RSUChangeState(eRSU_STATE_OPERATIONAL_IDLE, POSITION_REFERENCE_TO_OPERATIONAL_IDLE_TIMEOUT_MS);
                         }
@@ -198,7 +203,7 @@ void RSUReferenceSensorEdgeISR(void)
 
         // Negative edge
         else if (bNewState == REFERENCE_SENSOR_STATE_OFF && sRsu.sPosRefence.eRefState == eREF_STATE_WAIT_FOR_NEG_EDGE)
-            MotCtrlGetVar(MOTCTRL_VAR_NUM_ACTUAL_POSITION_INCREMENTS, [](void*){ _RSUPosRefChangeState(eREF_STATE_READY);}, NULL);
+            MotCtrlGetVar(MOTCTRL_VAR_NUM_ACTUAL_POSITION_INCREMENTS, [](void*){ _RSUPosRefChangeState(eREF_STATE_STOP_MOVEMENT);}, NULL);
 
     }
 }
@@ -310,6 +315,7 @@ void _RSUPosRefChangeState(teREFERENCE_STATE eNewState)
     switch(sRsu.sPosRefence.eRefState)
     {
         case eREF_STATE_INIT:
+            DebugOutput(DBG_OUTPUT_LVL_HIGH, "Initializing Position Reference.\n");
             // Switch on the interrupt for the reference sensor
             #ifndef DEBUG_NATIVE
             attachInterrupt(REF_SENSOR_PIN, RSUReferenceSensorEdgeISR, CHANGE);
@@ -317,9 +323,11 @@ void _RSUPosRefChangeState(teREFERENCE_STATE eNewState)
             break;
 
         case eREF_STATE_START_MOVEMENT:
+            DebugOutput(DBG_OUTPUT_LVL_HIGH, "Starting position reference move.\n");
             break;
 
         case eREF_STATE_WAIT_FOR_POS_EDGE:
+            DebugOutput(DBG_OUTPUT_LVL_HIGH, "Waiting for reference sensor signal positive edge.\n");
             sRsu.sPosRefence.i32RefIncs[0] = sMotCtrlVars.i32ActualPositionIncrements;
             break;
 

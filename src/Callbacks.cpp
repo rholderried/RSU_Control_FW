@@ -45,7 +45,6 @@ extern tsMOTCONTROLVARS sMotControlVars;
 void SCIReceiveByte(void)
 {
     uint8_t ui8Data[RX_PACKET_LENGTH];
-    
     SCIReceive(ui8Data, SCISerial.readBytes(ui8Data, SCISerial.available()));
 }
 
@@ -71,7 +70,6 @@ void serialTransmit (char* cMsg, uint16_t ui16Len)
 //=============================================================================
 uint8_t SCISerialWriteNonBlocking(uint8_t *pui8Buf, uint8_t ui8Len)
 {
-    DebugOutput(DBG_OUTPUT_LVL_HIGH, "Send SCI message.");
     if(SCISerial.availableForWrite() >= ui8Len)
     {
         SCISerial.write(pui8Buf, ui8Len);

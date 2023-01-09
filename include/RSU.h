@@ -83,6 +83,7 @@ typedef struct
     struct
     {
         int32_t i32RefIncs[2];
+        float   fPosRefScale;
         teREFERENCE_STATE eRefState;
     }sPosRefence;
     
@@ -94,7 +95,7 @@ typedef struct
 #define tsRSU_DEFAULTS {false,\
                         tsCOMMAND_INFO_DEFAULTS,\
                         {false, eRSU_STATE_INIT, eRSU_STATE_INIT,  -1},\
-                        {eREF_STATE_INIT},\
+                        {{0}, 0.0, eREF_STATE_INIT},\
                         -1,\
                         tsREVOLVER_DEFAULTS,\
                         tsREFERENCE_SENSOR_DEFAULTS\

@@ -26,7 +26,7 @@
 #define NUMBER_OF_MOTORCONTROLLER_VARS 3
 
 // Motorcontroller external variables
-#define MOTCTRL_VAR_NUM_MOTION_CONTROLLER_SCALE         59
+#define MOTCTRL_VAR_NUM_MOTION_CONTROLLER_SCALE         63
 #define MOTCTRL_VAR_NUM_ACTUAL_POSITION_INCREMENTS      12
 #define MOTCTRL_VAR_NUM_MOTIONCONTROLLER_ACTIVE_FLAG    16
 
@@ -91,6 +91,7 @@ typedef struct
 /******************************************************************************
  * Function declarations
  *****************************************************************************/
+bool MotCtrlSetVar (int16_t i16Num, uint32_t ui32Val, void (*TransferRdyCb)(void* pDat), void* pDat);
 bool MotCtrlGetVar (int16_t i16Num, void (*TransferRdyCb)(void* pDat), void* pDat);
 bool MotCtrlStartMovement(float fTargetAcceleration, float fTargetVelocity, float fTargetPosition, bool bReferenceMovement, void (*TransferRdyCb)(void* pDat), void* pDat);
 bool MotCtrlStopMovement(void (*TransferRdyCb)(void* pDat), void* pDat);

@@ -54,6 +54,21 @@ tsSCI_VAR sSciVarTable[NUMBER_OF_MOTORCONTROLLER_VARS] =
 /******************************************************************************
  * Function definitions
  *****************************************************************************/
+bool MotCtrlSetVar (int16_t i16Num, uint32_t ui32Val, void (*TransferRdyCb)(void* pDat), void* pDat)
+{
+    if (SCIGetProtocolState() == ePROTOCOL_IDLE)
+    {
+        SCIRequestSetVar(i16Num, {.ui32_hex = ui32Val});
+        sMotCtrl.sTransfer.TransferRdyCb = TransferRdyCb;
+        sMotCtrl.sTransfer.pDat = pDat;
+
+        // Flag that transfer has been started
+        return true;
+    }
+    else
+        return false;
+}
+
 bool MotCtrlGetVar (int16_t i16Num, void (*TransferRdyCb)(void* pDat), void* pDat)
 {
     if (SCIGetProtocolState() == ePROTOCOL_IDLE)
@@ -138,7 +153,10 @@ teTRANSFER_ACK ProcessSetVarTransfer (teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num
 {
     if (eAck == eREQUEST_ACK_STATUS_SUCCESS)
     {
-        ;
+        // Call the Transfer callback
+        if (sMotCtrl.sTransfer.TransferRdyCb)
+            sMotCtrl.sTransfer.TransferRdyCb(sMotCtrl.sTransfer.pDat);
+            
     }
     return eTRANSFER_ACK_SUCCESS;
 }
@@ -202,7 +220,7 @@ teTRANSFER_ACK ProcessCommandTransfer(teREQUEST_ACKNOWLEDGE eAck, int16_t i16Num
 {
     teTRANSFER_ACK eTAck = eTRANSFER_ACK_ABORT;
 
-    DebugOutput(DBG_OUTPUT_LVL_HIGH, "Command response received: %d", i16Num);
+    DebugOutput(DBG_OUTPUT_LVL_HIGH, "Command response received: %d\n", i16Num);
 
     if (eAck == eREQUEST_ACK_STATUS_SUCCESS || eAck == eREQUEST_ACK_STATUS_SUCCESS_DATA)
     {

@@ -45,7 +45,7 @@
 
 // Reference Sensor Hardware configuration
 /** Reference Sensor GPIO number */
-#define REF_SENSOR_PIN      12
+#define REF_SENSOR_PIN      13
 
 // Serial interface config
 /** Serial interface baud rate */
@@ -64,6 +64,14 @@
 #define SLOT_7_ID_PIN 25
 #define SLOT_8_ID_PIN 26
 
+/** Gear Ratio of the RSU (1:x)*/
+#define RSU_GEAR_RATIO 6
+
+/** Motor gear ratio (1:x) */
+#define MOTOR_GEAR_RATIO 33
+
+/** Motor number of pole pairs */
+#define MOTOR_NUMBER_OF_POLE_PAIRS 2
 
 
 

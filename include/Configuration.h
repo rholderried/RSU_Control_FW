@@ -23,11 +23,11 @@
  * Revolver parameter
  *****************************************************************************/
 /** Number of Sample cylinder slots */
-#define NUMBER_OF_SLOTS 6
+#define NUMBER_OF_SLOTS 2
 
 // Reference position search parameters
 /** Angular velocity of the revolver on reference position search [rad/s] */
-#define REFERENCE_POSITION_SEARCH_ANGULAR_VELOCITY      3.14f
+#define REFERENCE_POSITION_SEARCH_ANGULAR_VELOCITY      0.75f
 
 /** Angular acceleration of the revolver on reference position search [rad/s²] */
 #define REFERENCE_POSITION_SEARCH_ANGULAR_ACCELERATION  3.14f

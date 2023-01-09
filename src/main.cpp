@@ -108,8 +108,8 @@ void setup()
   #ifndef DEBUG_NATIVE
   // SCI serial interface
   SCISerial.begin(SCI_BAUD, SERIAL_8N1, SCI_PIN_RX, SCI_PIN_TX);
-  SCISerial.setRxFIFOFull(1);
-  SCISerial.onReceive(SCIReceiveByte, false);
+  // SCISerial.setRxFIFOFull(1);
+  // SCISerial.onReceive(SCIReceiveByte, false);
   #endif
 
 
@@ -134,6 +134,11 @@ void setup()
 void loop() 
 {
   RSUStateMachine();
+
+  if (SCISerial.available())
+  {
+    SCIReceiveByte();
+  }
 
   SCIMasterSM();
 }

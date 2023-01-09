@@ -35,7 +35,7 @@ void InitRefSensor (tsREFERENCE_SENSOR *psRefSens)//, tsREFERENCE_SENSOR_CALLBAC
     // Assign the GPIO
     // psRefSens->sCallbacks = sCallbacks;
 
-    pinMode(REF_SENSOR_PIN, INPUT_PULLUP);
+    pinMode(REF_SENSOR_PIN, INPUT);
 
     psRefSens->bLaststate = (bool)digitalRead(REF_SENSOR_PIN);
 }
